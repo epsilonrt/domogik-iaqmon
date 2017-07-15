@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="dmg-iaqmon" Database="" Version="10.0.0">
+  <Project Name="dmg-iaqmon" Path="dmg-iaqmon.project" Active="Yes"/>
+  <Project Name="dmg-iaqmon-init" Path="init/dmg-iaqmon-init.project" Active="No"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Project Name="dmg-iaqmon" ConfigName="Debug"/>
+      <Project Name="dmg-iaqmon-init" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="no">
+      <Project Name="dmg-iaqmon" ConfigName="Release"/>
+      <Project Name="dmg-iaqmon-init" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
