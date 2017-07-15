@@ -1,6 +1,6 @@
 # dmg-iaqmon
 
-*Moniteur de Qualité de l'air intérieur*
+*Moniteur de Qualité de l'air intérieur xPL*
 
 ---
 Copyright 2016-2017 (c), epsilonRT
@@ -9,7 +9,7 @@ Copyright 2016-2017 (c), epsilonRT
   <img src="https://raw.githubusercontent.com/epsilonrt/gxPL/master/doc/images/osi.png" alt="osi.png" align="right" valign="top">
 </a>
 
-dmg-iaqmon est un daemon qui surveille la qualité de l'air intérieur. Il utilise 
+**dmg-iaqmon** est un daemon qui surveille la qualité de l'air intérieur. Il utilise 
 pour cela 3 capteurs sur bus I²C:
 
 * Un capteur d'humidité et de température [ChipCap®2](http://amphenol-sensors.com/en/products/humidity/relative-humidity-sensors/3095-chipcap2-humidity-and-temperature-sensor-system-on-a-chip)  
@@ -17,6 +17,14 @@ pour cela 3 capteurs sur bus I²C:
 * Un capteur de particules fines [GP2Y1010](https://www.sharpsde.com/products/optoelectronic-components/model/GP2Y1010AU0F/) équipé d'un module [gp2-i2c](https://github.com/epsilonrt/gp2-i2c)
 
 Au moins un des capteurs doit être connecté au bus I²C.
+
+Il diffuse ses informations sur un réseau en utilisant le protocole 
+[xPL](https://fr.wikipedia.org/wiki/XPL_(protocole)) ce qui permet de l'intégrer
+facilement au projet [Domogik](http://www.domogik.org/fr/).
+
+**dmg-iaqmon** utilise [gxPL](https://github.com/epsilonrt/gxPL) 
+pour gérer le protocole xPL ce qui lui permet de diffuser ses mesures sur tous 
+les réseaux pris en charge par cette librairie (UDP/IP, XBee-ZB ...)
 
 Il a été développé sur un [Raspberry Pi](https://www.raspberrypi.org/) 
 mais peut être installé sur n'importe quelle cible suportée par SysIo et gxPL.
@@ -63,6 +71,8 @@ Pour automatiser le démarrage et l'arrêt, il est possible d'installer le scrip
                      supplied, otherwise default is 0x5A.
       -t [address] - enable ChipCap2/Hih sensor, the address on the bus can be
                      supplied, otherwise default is 0x28.
+      -p [address] - enable gp2-i2c sensor, the address on the bus can be
+                     supplied, otherwise default is 0x46.
       -h           - print this message
 
 Pour lancer le daemon en mode débugage avec gestion d'un capteur IAQ Core P et 
@@ -70,7 +80,7 @@ d'un capteur ChipCap®2:
 
     dmg-iaqmon -q -t -D -ddd
 
-Un script de lancement dmg-iaqmon peut être installé dans /etc/init.d et peut être
+Un script de lancement **dmg-iaqmon** peut être installé dans /etc/init.d et peut être
 lancé à l'aide de la commande:
 
     sudo /etc/init.d/dmg-iaqmon start
@@ -156,7 +166,7 @@ Ces messages sont émis à un intervale correspondant au paramètre configurable
 Ces messages sont émis lorsqu'une valeur évolue d'un écart supérieur ou égal 
 au gap réglé par la configuration xPL.
 
-Le corps des messages est le même que que les messages XPL-STAT.
+Le corps des messages est le même que que les messages **xpl-stat**.
 
 ### Messages **xpl-cmnd**
 
@@ -182,24 +192,24 @@ Plusieurs cas sont pris en charge:
 Les paramètres ci-dessous sont configurables par l'intermédiaire du protocole
 de configuration prévu par xPL :
 
-* **stat-interval** délai en secondes entre 2 envois de trame XPL-STAT, sa
+* **stat-interval** délai en secondes entre 2 envois de trame **xpl-stat**, sa
 valeur par défaut est de 300 s, une valeur de 0 vzut dire qu'aucun message
-XPL-STAT ne sera transmis (uniquement des messages XPL-TRIG si l'écart entre
+**xpl-stat** ne sera transmis (uniquement des messages **xpl-trig** si l'écart entre
 2 mesures dépasse le gap).  
-* **temp-gap** écart de température nécessaire à la transmission d'un message xpl-trig  
+* **temp-gap** écart de température nécessaire à la transmission d'un message **xpl-trig**  
 * **temp-zero** correction de zéro de la température
-* **hum-gap** écart d'humidité nécessaire à la transmission d'un message xpl-trig  
+* **hum-gap** écart d'humidité nécessaire à la transmission d'un message **xpl-trig**  
 * **hum-zero** correction de zéro de l'humidité
-* **co2-gap** écart de co2 nécessaire à la transmission d'un message xpl-trig  
-* **tvoc-gap** écart de tvoc nécessaire à la transmission d'un message xpl-trig  
-* **pm10-gap** écart de PM10 nécessaire à la transmission d'un message xpl-trig  
+* **co2-gap** écart de co2 nécessaire à la transmission d'un message **xpl-trig**  
+* **tvoc-gap** écart de tvoc nécessaire à la transmission d'un message **xpl-trig**  
+* **pm10-gap** écart de PM10 nécessaire à la transmission d'un message **xpl-trig**  
 * **pm10-d1** valeur de densité de PM10 en µg/m3 correspondant au premier point d'étalonnage (densité la plus faible)  
 * **pm10-v1** valeur de tension en mV correspondant au premier point d'étalonnage  
 * **pm10-d2** valeur de densité de PM10 en µg/m3 correspondant au deuxième point d'étalonnage (densité la plus forte)  
 * **pm10-v2** valeur de tension en mV correspondant au deuxième point d'étalonnage  
 * **interval** interval en minutes entre 2 battements de coeur  
 * **newconf** nom de la configuration (instance)  
-* **group** groupes dont dmg-iaqmon fait partie, voir 
+* **group** groupes dont **dmg-iaqmon** fait partie, voir 
   [Devices Groups](http://xplproject.org.uk/wiki/XPL_Specification_Document.html#Device_Groups)  
 * **filter** filtre de messages utilisés, voir 
   [Installer and User Defined Filters](http://xplproject.org.uk/wiki/XPL_Specification_Document.html#Installer_and_User_Defined_Filters)
