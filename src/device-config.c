@@ -95,7 +95,7 @@ prvDeviceSetConfig (gxPLDevice * device) {
 
     if (iStrToLong (str, &n, 0) == 0) {
 
-      if (n <= UINT16_MAX) {
+      if ((n <= UINT16_MAX) && (n > 0)) {
 
         xCtx.xIaqGap.usCo2 = (uint16_t) n;
       }
@@ -108,13 +108,62 @@ prvDeviceSetConfig (gxPLDevice * device) {
 
     if (iStrToLong (str, &n, 0) == 0) {
 
-      if (n <= UINT16_MAX) {
+      if ((n <= UINT16_MAX) && (n > 0)) {
 
         xCtx.xIaqGap.usTvoc = (uint16_t) n;
       }
     }
   }
 
+  str = gxPLDeviceConfigValueGet (device, CFG_SENSOR_PM_GAP_NAME);
+  if (str) {
+    long n;
+    if (iStrToLong (str, &n, 0) == 0) {
+
+      xCtx.iPmGap = n;
+    }
+  }
+
+  str = gxPLDeviceConfigValueGet (device, CFG_SENSOR_PM_V1_NAME);
+  if (str) {
+    double d;
+    if (iStrToDouble (str, &d) == 0) {
+
+      xCtx.xPmSetting.dV1 = d;
+      xCtx.bPmSettingChanged = 1;
+    }
+  }
+
+  str = gxPLDeviceConfigValueGet (device, CFG_SENSOR_PM_V2_NAME);
+  if (str) {
+    double d;
+    if (iStrToDouble (str, &d) == 0) {
+
+      xCtx.xPmSetting.dV2 = d;
+      xCtx.bPmSettingChanged = 1;
+    }
+  }
+
+  str = gxPLDeviceConfigValueGet (device, CFG_SENSOR_PM_D1_NAME);
+  if (str) {
+    double d;
+    if (iStrToDouble (str, &d) == 0) {
+
+      xCtx.xPmSetting.dD1 = d;
+      xCtx.bPmSettingChanged = 1;
+    }
+  }
+
+  str = gxPLDeviceConfigValueGet (device, CFG_SENSOR_PM_D2_NAME);
+  if (str) {
+    double d;
+    
+    if (iStrToDouble (str, &d) == 0) {
+
+      xCtx.xPmSetting.dD2 = d;
+      xCtx.bPmSettingChanged = 1;
+    }
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -189,6 +238,27 @@ xDeviceCreate (gxPLSetting * setting) {
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_TVOC_GAP_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_TVOC_GAP_NAME,
                               gxPLLongToStr (CFG_DEFAULT_TVOC_GAP));
+
+    gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_GAP_NAME, gxPLConfigReconf, 1);
+    gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_GAP_NAME,
+                              gxPLLongToStr (CFG_DEFAULT_PM_GAP));
+
+    gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_V1_NAME, gxPLConfigReconf, 1);
+    gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_V1_NAME,
+                              gxPLDoubleToStr (CFG_DEFAULT_PM_V1, 1));
+
+    gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_V2_NAME, gxPLConfigReconf, 1);
+    gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_V2_NAME,
+                              gxPLDoubleToStr (CFG_DEFAULT_PM_V2, 1));
+
+    gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_D1_NAME, gxPLConfigReconf, 1);
+    gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_D1_NAME,
+                              gxPLDoubleToStr (CFG_DEFAULT_PM_D1, 1));
+
+    gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_D2_NAME, gxPLConfigReconf, 1);
+    gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_D2_NAME,
+                              gxPLDoubleToStr (CFG_DEFAULT_PM_D2, 1));
+
   }
 
   // Create a sensor.basic message conforming to http://xplproject.org.uk/wiki/Schema_-_SENSOR.html

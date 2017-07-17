@@ -145,11 +145,12 @@ void
 vParseAdditionnalOptions (int argc, char *argv[]) {
   int c;
 
-  static const char short_options[] = "hb:q::t::" GXPL_GETOPT;
+  static const char short_options[] = "hb:q::t::p::" GXPL_GETOPT;
   static struct option long_options[] = {
     {"bus",     required_argument, NULL, 's'},
     {"iaq",     optional_argument, NULL, 'q' },
     {"rht",     optional_argument, NULL, 't' },
+    {"pm",     optional_argument, NULL, 'p' },
     {"help",     no_argument,       NULL, 'h' },
     {NULL, 0, NULL, 0} /* End of array need by getopt_long do not delete it*/
   };
@@ -203,6 +204,25 @@ vParseAdditionnalOptions (int argc, char *argv[]) {
           break;
         }
         PDEBUG ("enabled ChipCap2/Hih at 0x%02X (default)", xCtx.ucRhtAddr);
+        break;
+
+      case 'p':
+        xCtx.ucPmAddr = CFG_DEFAULT_PM_ADDR;
+        if (optarg) {
+          long n;
+
+          if (iStrToLong (optarg, &n, 0) == 0) {
+            if ( (n >= 0x03) && (n <= 0x77) ) {
+
+              xCtx.ucPmAddr = (unsigned) n;
+              PDEBUG ("set gp2-i2c address to 0x%02X", xCtx.ucPmAddr);
+              break;
+            }
+          }
+          PERROR ("Unable to set gp2-i2c address to %s", optarg);
+          break;
+        }
+        PDEBUG ("enabled gp2-i2c at 0x%02X (default)", xCtx.ucRhtAddr);
         break;
 
       case 'h':

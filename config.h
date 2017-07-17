@@ -51,24 +51,45 @@ extern "C" {
 #define CFG_SENSOR_TVOC_TYPE      "tvoc"
 #define CFG_SENSOR_TVOC_UNIT      "ppb"
 
-// Paramètres configurables par xPL
 #define CFG_SENSOR_CO2_GAP_NAME   "co2-gap"
 #define CFG_SENSOR_TVOC_GAP_NAME  "tvoc-gap"
+
+// --- Capteur de particules fines
+#define CFG_SENSOR_PM_DEVICE     "pm"
+#define CFG_SENSOR_PM_TYPE       "pm10"
+#define CFG_SENSOR_PM_UNIT       "ug_m3"
+
+// Paramètres configurables par xPL
+#define CFG_SENSOR_PM_GAP_NAME   "pm10-gap"
+#define CFG_SENSOR_PM_V1_NAME    "pm10-v1"
+#define CFG_SENSOR_PM_V2_NAME    "pm10-v2"
+#define CFG_SENSOR_PM_D1_NAME    "pm10-d1"
+#define CFG_SENSOR_PM_D2_NAME    "pm10-d2"
 
 /* default values =========================================================== */
 // Options ligne de commande
 #define CFG_DEFAULT_I2C_BUS     "/dev/i2c-1"
 #define CFG_DEFAULT_RHT_ADDR    CHIPCAP2_I2CADDR
 #define CFG_DEFAULT_IAQ_ADDR    IAQ_I2CADDR
+#define CFG_DEFAULT_PM_ADDR     GP2I2C_I2CADDR
 
 // Paramètres xPL
 #define CFG_DEFAULT_STAT_INTERVAL  300 // 0 pas de message stat périodique
+
 #define CFG_DEFAULT_TEMP_GAP       0.1
 #define CFG_DEFAULT_TEMP_ZERO      0.0
+
 #define CFG_DEFAULT_HUM_GAP        5.0
 #define CFG_DEFAULT_HUM_ZERO       0.0
+
 #define CFG_DEFAULT_CO2_GAP        5
 #define CFG_DEFAULT_TVOC_GAP       5
+
+#define CFG_DEFAULT_PM_GAP        10
+#define CFG_DEFAULT_PM_V1         300.0
+#define CFG_DEFAULT_PM_D1         0.0
+#define CFG_DEFAULT_PM_V2         3000.0
+#define CFG_DEFAULT_PM_D2         400.0
 
 /* build options ============================================================ */
 
