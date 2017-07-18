@@ -47,6 +47,8 @@ prvPrintUsage (void) {
           "                 supplied, otherwise default is 0x%02X.\n", CFG_DEFAULT_IAQ_ADDR);
   printf ("  -t [address] - enable ChipCap2/Hih sensor, the address on the bus can be\n"
           "                 supplied, otherwise default is 0x%02X.\n", CFG_DEFAULT_RHT_ADDR);
+  printf ("  -p [address] - enable gp2-i2c sensor, the address on the bus can be\n"
+          "                 supplied, otherwise default is 0x%02X.\n", CFG_DEFAULT_PM_ADDR);
   printf ("  -h           - print this message\n\n");
 }
 
