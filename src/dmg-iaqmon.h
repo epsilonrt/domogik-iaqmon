@@ -32,19 +32,22 @@ struct xIaqMonContext {
   
   uint8_t ucRhtAddr;
   xHih6130 * xRhtSensor;
-  xHih6130Data xRhtValue;
+  xHih6130Data xRhtCurrent;
+  xHih6130Data xRhtLastTx;
   xHih6130Data xRhtGap;   // configurable
   xHih6130Data xRhtZero;  // configurable
 
   uint8_t ucIaqAddr;
   xIaq * xIaqSensor;
-  xIaqData xIaqValue;
+  xIaqData xIaqCurrent;
+  xIaqData xIaqLastTx;
   xIaqData xIaqGap;       // configurable
   time_t ulIaqLastTime;
 
   uint8_t ucPmAddr;
   xG2pSensor * xPmSensor;
-  int iPmValue;
+  int iPmCurrent;
+  int iPmLastTx;
   int iPmGap;          // configurable
   xG2pSetting xPmSetting; // configurable
   time_t ulPmLastTime;
@@ -53,9 +56,9 @@ struct xIaqMonContext {
 
   gxPLMessage * xSensorMsg;
   struct {
-    int bSensorTrigEnabled: 1;
-    int bRhtStarted: 1;
-    int bRhtUpdated: 1;
+    int bRhtStarted: 1; // Mesure démarrée
+    int bRhtUpdated: 1; // 1ère mesure effectuée
+    
     int bTempRequest: 1;
     int bHumRequest: 1;
     int bCo2Request: 1;

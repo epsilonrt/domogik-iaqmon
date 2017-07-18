@@ -27,64 +27,91 @@
 /* private functions ======================================================== */
 
 /* -----------------------------------------------------------------------------
+ * Démare la mesure de temp/hum si elle n'est pas démarrée
+ */
+static int
+priRhtStart (void) {
+  int ret = 0;
+
+  if (xCtx.bRhtStarted == 0) {
+
+    ret = iHih6130Start (xCtx.xRhtSensor);
+    if (ret == 0) {
+
+      xCtx.bRhtStarted = 1;
+    }
+  }
+
+  return ret;
+}
+
+/* -----------------------------------------------------------------------------
+ * Effectue la mesure de température et d'humidité :
+ * - Démare la mesure si elle n'est pas démarrée
+ */
+static int
+priRhtRead (xHih6130Data * xHihCurrent) {
+  int ret;
+
+  ret = iHih6130Read (xCtx.xRhtSensor, xHihCurrent);
+  if (ret < 0) {
+
+    return ret;
+  }
+  else if (ret == 0) {
+
+    xCtx.bRhtStarted = 0;
+    // Correction de zéro
+    xHihCurrent->dTemp -= xCtx.xRhtZero.dTemp;
+    xHihCurrent->dHum -= xCtx.xRhtZero.dHum;
+  }
+  
+  return ret;
+}
+
+/* -----------------------------------------------------------------------------
  * Effectue les mesures et transmets les messages correspondants si nécessaire
  */
 static int
 priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
   int ret;
 
+  time_t t = time (NULL);
+
   if (xCtx.xRhtSensor) {
 
     // Mesure capteur HIH6130/ChipCap2
-    if (xCtx.bRhtStarted) {
-      xHih6130Data xHihCurrent;
+    ret = priRhtRead (&xCtx.xRhtCurrent);
 
-      ret = iHih6130Read (xCtx.xRhtSensor, &xHihCurrent);
-      if (ret < 0) {
+    if (ret < 0) {
 
-        return -1;
-      }
-      else if (ret == 0) {
-
-        xCtx.bRhtStarted = 0;
-        xCtx.bRhtUpdated = 1;
-        // Correction de zéro
-        xHihCurrent.dTemp -= xCtx.xRhtZero.dTemp;
-        xHihCurrent.dHum -= xCtx.xRhtZero.dHum;
-
-        if (msgtype == gxPLMessageTrigger) {
-          if (fabs (xHihCurrent.dTemp - xCtx.xRhtValue.dTemp) >= xCtx.xRhtGap.dTemp) {
-
-            xCtx.bTempRequest = 1;
-          }
-          if (fabs (xHihCurrent.dHum - xCtx.xRhtValue.dHum) >= xCtx.xRhtGap.dHum) {
-
-            xCtx.bHumRequest = 1;
-          }
-        }
-        xCtx.xRhtValue = xHihCurrent;
-      }
+      return ret;
     }
 
-    if (!xCtx.bRhtStarted) {
+    if (ret == 0) {
 
-      if (iHih6130Start (xCtx.xRhtSensor) != 0) {
+      if (msgtype == gxPLMessageTrigger) {
 
-        return -1;
+        if (fabs (xCtx.xRhtCurrent.dTemp - xCtx.xRhtLastTx.dTemp) >= xCtx.xRhtGap.dTemp) {
+
+          xCtx.bTempRequest = 1;
+        }
+        if (fabs (xCtx.xRhtCurrent.dHum - xCtx.xRhtLastTx.dHum) >= xCtx.xRhtGap.dHum) {
+
+          xCtx.bHumRequest = 1;
+        }
       }
-      xCtx.bRhtStarted = true;
+
+      priRhtStart();
     }
   }
-
-  time_t t = time (NULL);
 
   if (xCtx.xIaqSensor) {
 
     // Mesure capteur IAQ
     if ( (t - xCtx.ulIaqLastTime) > 11) {
-      xIaqData xIaqCurrent;
 
-      ret = iIaqRead (xCtx.xIaqSensor, &xIaqCurrent);
+      ret = iIaqRead (xCtx.xIaqSensor, &xCtx.xIaqCurrent);
       if (ret < 0) {
 
         return -1;
@@ -93,16 +120,16 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
 
         xCtx.ulIaqLastTime = t;
         if (msgtype == gxPLMessageTrigger) {
-          if (abs ( (int) xIaqCurrent.usCo2 - (int) xCtx.xIaqValue.usCo2) >= (int) xCtx.xIaqGap.usCo2) {
+          
+          if (abs ( (int) xCtx.xIaqCurrent.usCo2 - (int) xCtx.xIaqLastTx.usCo2) >= (int) xCtx.xIaqGap.usCo2) {
 
             xCtx.bCo2Request = 1;
           }
-          if (abs ( (int) xIaqCurrent.usTvoc - (int) xCtx.xIaqValue.usTvoc) >= (int) xCtx.xIaqGap.usTvoc) {
+          if (abs ( (int) xCtx.xIaqCurrent.usTvoc - (int) xCtx.xIaqLastTx.usTvoc) >= (int) xCtx.xIaqGap.usTvoc) {
 
             xCtx.bTvocRequest = 1;
           }
         }
-        xCtx.xIaqValue = xIaqCurrent;
       }
     }
   }
@@ -126,20 +153,16 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
       else {
 
         xCtx.ulPmLastTime = t;
+        xCtx.iPmCurrent = ret;
         if (msgtype == gxPLMessageTrigger) {
-          if (abs (ret -  xCtx.iPmValue) >=  xCtx.iPmGap) {
+          
+          if (abs (xCtx.iPmCurrent -  xCtx.iPmLastTx) >=  xCtx.iPmGap) {
 
             xCtx.bPmRequest = 1;
           }
         }
-        xCtx.iPmValue = ret;
       }
     }
-  }
-
-  if ( (xCtx.bSensorTrigEnabled == 0) && (msgtype == gxPLMessageTrigger)) {
-
-    return 0;
   }
 
   // Envoi des messages
@@ -152,14 +175,15 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
       gxPLMessageBodyClear (xCtx.xSensorMsg);
       gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_RHT_DEVICE);
       gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_TEMP_TYPE);
-      gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%.1f", xCtx.xRhtValue.dTemp);
+      gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%.1f", xCtx.xRhtCurrent.dTemp);
 
       // Broadcast the message
-      PDEBUG ("sensor broadcast temp value = %.1f", xCtx.xRhtValue.dTemp);
+      PDEBUG ("sensor broadcast temp value = %.1f", xCtx.xRhtCurrent.dTemp);
       if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
 
         return -1;
       }
+      xCtx.xRhtLastTx.dTemp = xCtx.xRhtCurrent.dTemp;
     }
 
     if (xCtx.bHumRequest) {
@@ -168,14 +192,15 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
       gxPLMessageBodyClear (xCtx.xSensorMsg);
       gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_RHT_DEVICE);
       gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_HUM_TYPE);
-      gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%.1f", xCtx.xRhtValue.dHum);
+      gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%.1f", xCtx.xRhtCurrent.dHum);
 
       // Broadcast the message
-      PDEBUG ("sensor broadcast humidity value = %.1f", xCtx.xRhtValue.dHum);
+      PDEBUG ("sensor broadcast humidity value = %.1f", xCtx.xRhtCurrent.dHum);
       if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
 
         return -1;
       }
+      xCtx.xRhtLastTx.dHum = xCtx.xRhtCurrent.dHum;
     }
   }
 
@@ -185,15 +210,16 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
     gxPLMessageBodyClear (xCtx.xSensorMsg);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_IAQ_DEVICE);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_CO2_TYPE);
-    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xIaqValue.usCo2);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xIaqCurrent.usCo2);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "units", CFG_SENSOR_CO2_UNIT);
 
     // Broadcast the message
-    PDEBUG ("sensor broadcast co2 value = %u " CFG_SENSOR_CO2_UNIT, xCtx.xIaqValue.usCo2);
+    PDEBUG ("sensor broadcast co2 value = %u " CFG_SENSOR_CO2_UNIT, xCtx.xIaqCurrent.usCo2);
     if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
 
       return -1;
     }
+    xCtx.xIaqLastTx.usCo2 = xCtx.xIaqCurrent.usCo2;
   }
 
   if (xCtx.bTvocRequest) {
@@ -202,15 +228,16 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
     gxPLMessageBodyClear (xCtx.xSensorMsg);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_IAQ_DEVICE);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_TVOC_TYPE);
-    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xIaqValue.usTvoc);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xIaqCurrent.usTvoc);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "units", CFG_SENSOR_TVOC_UNIT);
 
     // Broadcast the message
-    PDEBUG ("sensor broadcast tvoc value = %u "CFG_SENSOR_TVOC_UNIT, xCtx.xIaqValue.usTvoc);
+    PDEBUG ("sensor broadcast tvoc value = %u "CFG_SENSOR_TVOC_UNIT, xCtx.xIaqCurrent.usTvoc);
     if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
 
       return -1;
     }
+    xCtx.xIaqLastTx.usTvoc = xCtx.xIaqCurrent.usTvoc;
   }
 
   if (xCtx.bPmRequest) {
@@ -219,15 +246,16 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
     gxPLMessageBodyClear (xCtx.xSensorMsg);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_PM_DEVICE);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_PM_TYPE);
-    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.iPmValue);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.iPmCurrent);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "units", CFG_SENSOR_PM_UNIT);
 
     // Broadcast the message
-    PDEBUG ("sensor broadcast pm10 value = %u", xCtx.iPmValue);
+    PDEBUG ("sensor broadcast pm10 value = %u", xCtx.iPmCurrent);
     if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
 
       return -1;
     }
+    xCtx.iPmLastTx = xCtx.iPmCurrent;
   }
 
   return 0;
@@ -380,21 +408,42 @@ iSensorClose (gxPLDevice * device) {
 int
 iSensorPoll (gxPLDevice * device) {
 
-  if ( (xCtx.ulStatInterval) && (xCtx.bRhtUpdated)) {
+  if (xCtx.ulStatInterval) {
+    // Envoi des messages stat périodiques
+
     time_t t = time (NULL);
 
-    // Envoi des messages stat périodiques
     if ( (t - xCtx.ulStatLastTime) > xCtx.ulStatInterval) {
 
+      if (xCtx.xRhtSensor != NULL) {
+
+        if  (xCtx.bRhtUpdated == 0) {
+          int ret = -1;
+
+          priRhtStart();
+
+          // Attente première mesure RHT
+          while (ret != 0)  {
+
+            ret = priRhtRead (&xCtx.xRhtCurrent);
+            if (ret < 0) {
+
+              return ret;
+            }
+          }
+          xCtx.bRhtUpdated = 1;
+        }
+
+        xCtx.bTempRequest = 1;
+        xCtx.bHumRequest = 1;
+      }
+
       // Toutes les mesures seront envoyées
-      xCtx.bTempRequest = (xCtx.xRhtSensor != NULL);
-      xCtx.bHumRequest = (xCtx.xRhtSensor != NULL);
       xCtx.bCo2Request = (xCtx.xIaqSensor != NULL);
       xCtx.bTvocRequest = (xCtx.xIaqSensor != NULL);
       xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
 
       xCtx.ulStatLastTime = t;
-      xCtx.bSensorTrigEnabled = 1; // on valide l'envoi des messages trig
       return priSendCurrentValue (device, gxPLMessageStatus);
     }
   }

@@ -39,15 +39,9 @@ prvDeviceSetConfig (gxPLDevice * device) {
     if (iStrToLong (str, &n, 0) == 0) {
 
       xCtx.ulStatInterval = (time_t) n;
-      if (xCtx.ulStatInterval == 0) {
-        
-        // messages stat dévalidés
-        xCtx.bSensorTrigEnabled = 1;
-      }
-      else {
+      if (xCtx.ulStatInterval != 0) {
         
         // période stat non nulle, on va envoyer un message stat
-        xCtx.bSensorTrigEnabled = 0;
         xCtx.ulStatLastTime = 0;
       }
     }
