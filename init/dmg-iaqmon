@@ -21,6 +21,10 @@ DAEMON=/usr/local/bin/$NAME
 XPL_IF=
 XPL_NET=
 XPL_DEBUG=
+I2C_BUS=
+RHT=
+IAQ=
+PM=
 
 test -x $DAEMON || exit 0
 
@@ -54,7 +58,39 @@ set_args () {
   if [ "$var" = "udp" ] || [ "$var" = "xbeezb" ]; then
     XPL_NET="-n $var"
   fi
-  
+
+  var=$(trim "$(grep 'i2c_bus' $tmpf | cut -d '=' -f2)")
+  if [ "_$var" != "_" ]; then
+    I2C_BUS="-b $var"
+  fi
+
+  var=$(trim "$(grep 'rht' $tmpf | cut -d '=' -f2)")
+  if [ "_$var" != "_" ]; then
+    if [ "$var" = "default" ]; then
+      RHT="-t"
+    else
+      RHT="-t $var"
+    fi
+  fi
+
+  var=$(trim "$(grep 'iaq' $tmpf | cut -d '=' -f2)")
+  if [ "_$var" != "_" ]; then
+    if [ "$var" = "default" ]; then
+      IAQ="-q"
+    else
+      IAQ="-q $var"
+    fi
+  fi
+
+  var=$(trim "$(grep 'pm' $tmpf | cut -d '=' -f2)")
+  if [ "_$var" != "_" ]; then
+    if [ "$var" = "default" ]; then
+      PM="-p"
+    else
+      PM="-p $var"
+    fi
+  fi
+
   var=$(trim "$(grep 'debug' $tmpf | cut -d '=' -f2)")
   if [ "$var" = "1" ] || [ "$var" = "true" ]; then
     XPL_DEBUG=-ddd
@@ -67,7 +103,7 @@ daemon_start () {
 
   set_args
   log_daemon_msg "Starting Air Quality Monitor" "dmg-iaqmon"
-  start-stop-daemon --start $pgm_args --oknodo --nicelevel $niceness --exec $DAEMON -- $XPL_IF $XPL_NET $XPL_DEBUG
+  start-stop-daemon --start $pgm_args --oknodo --nicelevel $niceness --exec $DAEMON -- $XPL_IF $XPL_NET $XPL_DEBUG $I2C_BUS $RHT $IAQ $PM
   log_end_msg $?
   return $?
 }
