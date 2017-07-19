@@ -25,11 +25,23 @@
 #include "version-git.h"
 
 /* structures =============================================================== */
+union xQiList {
+  struct {
+    uint8_t ucAqi;
+    uint8_t ucCo2;
+    uint8_t ucVoc;
+    uint8_t ucPm;
+    uint8_t ucHum;
+  };
+  uint8_t ucRaw[5];
+};
+typedef union xQiList xQiList;
+
 struct xIaqMonContext {
   time_t ulStatInterval;  // configurable
 
   char * sI2cBus;
-  
+
   uint8_t ucRhtAddr;
   xHih6130 * xRhtSensor;
   xHih6130Data xRhtCurrent;
@@ -52,19 +64,33 @@ struct xIaqMonContext {
   xG2pSetting xPmSetting; // configurable
   time_t ulPmLastTime;
 
+  xQiList xQiCurrent;
+  xQiList xQiLastTx;
+
   time_t ulStatLastTime;
 
   gxPLMessage * xSensorMsg;
   struct {
-    int bRhtStarted: 1; // Mesure démarrée
-    int bRhtUpdated: 1; // 1ère mesure effectuée
+    uint16_t bRhtStarted: 1; // Mesure démarrée
+    uint16_t bRhtUpdated: 1; // 1ère mesure effectuée
+
+    uint16_t bAqiEnabled: 1;
+    uint16_t bAqiRequest: 1;
     
-    int bTempRequest: 1;
-    int bHumRequest: 1;
-    int bCo2Request: 1;
-    int bTvocRequest: 1;
-    int bPmRequest: 1;
-    int bPmSettingChanged: 1;
+    uint16_t bTempRequest: 1;
+    
+    uint16_t bHumRequest: 1;
+    uint16_t bHumQiRequest: 1;
+    
+    uint16_t bCo2Request: 1;
+    uint16_t bCo2QiRequest: 1;
+    
+    uint16_t bTvocRequest: 1;
+    uint16_t bTvocQiRequest: 1;
+    
+    uint16_t bPmRequest: 1;
+    uint16_t bPmQiRequest: 1;
+    uint16_t bPmSettingChanged: 1;
   };
 };
 typedef struct xIaqMonContext xIaqMonContext;

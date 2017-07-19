@@ -23,6 +23,11 @@ extern "C" {
 #define CFG_LOG_LEVEL           LOG_INFO
 #define CFG_DAEMON_MAX_RESTARTS 100
 
+#define CFG_IQTH_PM  { 33, 58, 75, 91, 110 }
+#define CFG_IQTH_CO2 { 600, 800, 1200, 1700, 4000 }
+#define CFG_IQTH_VOC { 200, 400, 800, 1600, 3200 }
+#define CFG_IQTH_HUM { {50, 60}, {45, 65}, {40, 70}, {30, 80}, {20, 90}}
+
 #define CFG_XPL_POLL_RATE_MS    1000
 
 #define CFG_XPL_VENDOR_ID       "domogik"
@@ -34,9 +39,14 @@ extern "C" {
 #define CFG_SENSOR_STAT_INTERVAL_NAME  "stat-interval"
 
 // --- Capteur de température et d'humidité
+#define CFG_SENSOR_AQI_DEVICE     "aqi"
+#define CFG_SENSOR_AQI_TYPE       "aqi"
+
+// --- Capteur de température et d'humidité
 #define CFG_SENSOR_RHT_DEVICE     "rht"
 #define CFG_SENSOR_TEMP_TYPE      "temp"
 #define CFG_SENSOR_HUM_TYPE       "humidity"
+#define CFG_SENSOR_HQI_TYPE       "humidity-qi"
 
 // Paramètres configurables par xPL
 #define CFG_SENSOR_TEMP_GAP_NAME  "temp-gap"
@@ -48,8 +58,10 @@ extern "C" {
 #define CFG_SENSOR_IAQ_DEVICE     "iaq"
 #define CFG_SENSOR_CO2_TYPE       "co2"
 #define CFG_SENSOR_CO2_UNIT       "ppm"
+#define CFG_SENSOR_CQI_TYPE       "co2-qi"
 #define CFG_SENSOR_TVOC_TYPE      "tvoc"
 #define CFG_SENSOR_TVOC_UNIT      "ppb"
+#define CFG_SENSOR_TQI_TYPE       "tvoc-qi"
 
 #define CFG_SENSOR_CO2_GAP_NAME   "co2-gap"
 #define CFG_SENSOR_TVOC_GAP_NAME  "tvoc-gap"
@@ -58,6 +70,7 @@ extern "C" {
 #define CFG_SENSOR_PM_DEVICE     "pm"
 #define CFG_SENSOR_PM_TYPE       "pm10"
 #define CFG_SENSOR_PM_UNIT       "ug_m3"
+#define CFG_SENSOR_PQI_TYPE      "pm10-qi"
 
 // Paramètres configurables par xPL
 #define CFG_SENSOR_PM_GAP_NAME   "pm10-gap"

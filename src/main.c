@@ -49,6 +49,7 @@ prvPrintUsage (void) {
           "                 supplied, otherwise default is 0x%02X.\n", CFG_DEFAULT_RHT_ADDR);
   printf ("  -p [address] - enable gp2-i2c sensor, the address on the bus can be\n"
           "                 supplied, otherwise default is 0x%02X.\n", CFG_DEFAULT_PM_ADDR);
+  printf ("  -a           - enable broadcasting the air quality index (AQI)\n");
   printf ("  -h           - print this message\n\n");
 }
 
@@ -147,12 +148,13 @@ void
 vParseAdditionnalOptions (int argc, char *argv[]) {
   int c;
 
-  static const char short_options[] = "hb:q::t::p::" GXPL_GETOPT;
+  static const char short_options[] = "ahb:q::t::p::" GXPL_GETOPT;
   static struct option long_options[] = {
     {"bus",     required_argument, NULL, 's'},
     {"iaq",     optional_argument, NULL, 'q' },
     {"rht",     optional_argument, NULL, 't' },
     {"pm",     optional_argument, NULL, 'p' },
+    {"aqi",     no_argument,       NULL, 'a' },
     {"help",     no_argument,       NULL, 'h' },
     {NULL, 0, NULL, 0} /* End of array need by getopt_long do not delete it*/
   };
@@ -227,6 +229,11 @@ vParseAdditionnalOptions (int argc, char *argv[]) {
         PDEBUG ("enabled gp2-i2c at 0x%02X (default)", xCtx.ucRhtAddr);
         break;
 
+      case 'a':
+        xCtx.bAqiEnabled = 1;
+        PDEBUG ("enabled broadcasting AQi");
+        break;
+        
       case 'h':
         prvPrintUsage();
         exit (EXIT_SUCCESS);
