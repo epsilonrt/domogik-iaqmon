@@ -42,6 +42,9 @@ extern "C" {
 #define CFG_SENSOR_AQI_DEVICE     "aqi"
 #define CFG_SENSOR_AQI_TYPE       "aqi"
 
+#define CFG_SENSOR_LED_DEVICE     "led"
+#define CFG_SENSOR_LUM_TYPE       "luminosity"
+
 // --- Capteur de température et d'humidité
 #define CFG_SENSOR_RHT_DEVICE     "rht"
 #define CFG_SENSOR_TEMP_TYPE      "temp"
@@ -55,6 +58,7 @@ extern "C" {
 #define CFG_SENSOR_HUM_ZERO_NAME  "hum-zero"
 
 // --- Capteur de CO2 et TVOC
+#define CFG_SENSOR_IAQ_POLL       (19)
 #define CFG_SENSOR_IAQ_DEVICE     "iaq"
 #define CFG_SENSOR_CO2_TYPE       "co2"
 #define CFG_SENSOR_CO2_UNIT       "ppm"
@@ -85,6 +89,23 @@ extern "C" {
 #define CFG_DEFAULT_RHT_ADDR    CHIPCAP2_I2CADDR
 #define CFG_DEFAULT_IAQ_ADDR    IAQ_I2CADDR
 #define CFG_DEFAULT_PM_ADDR     GP2I2C_I2CADDR
+
+#define CFG_DEFAULT_LED_ADDR TLC59116_ADDR (0, 0, 0, 0)
+/* Nombre et broches /OUT des leds RGB */
+#define CFG_DEFAULT_LED_NOF_LEDS   4
+#define CFG_DEFAULT_LED_LED1_RED   0
+#define CFG_DEFAULT_LED_LED1_GREEN 1
+#define CFG_DEFAULT_LED_LED1_BLUE  2
+#define CFG_DEFAULT_LED_LED2_RED   9
+#define CFG_DEFAULT_LED_LED2_GREEN 10
+#define CFG_DEFAULT_LED_LED2_BLUE  11
+#define CFG_DEFAULT_LED_LED3_RED   3
+#define CFG_DEFAULT_LED_LED3_GREEN 4
+#define CFG_DEFAULT_LED_LED3_BLUE  5
+#define CFG_DEFAULT_LED_LED4_RED   6
+#define CFG_DEFAULT_LED_LED4_GREEN 7
+#define CFG_DEFAULT_LED_LED4_BLUE  8
+#define CFG_DEFAULT_LED_LUM       32
 
 // Paramètres xPL
 #define CFG_DEFAULT_STAT_INTERVAL  300 // 0 pas de message stat périodique

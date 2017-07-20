@@ -50,6 +50,7 @@ prvPrintUsage (void) {
   printf ("  -p [address] - enable gp2-i2c sensor, the address on the bus can be\n"
           "                 supplied, otherwise default is 0x%02X.\n", CFG_DEFAULT_PM_ADDR);
   printf ("  -a           - enable broadcasting the air quality index (AQI)\n");
+  printf ("  -L           - enable RGB leds to display the air quality index (AQI)\n");
   printf ("  -h           - print this message\n\n");
 }
 
@@ -93,6 +94,17 @@ vMain (gxPLSetting * setting) {
     exit (EXIT_FAILURE);
   }
 
+  // Leds for display AQI
+  if (xCtx.bLedEnabled) {
+    
+    ret = iLedOpen(device);
+    if (ret != 0) {
+
+      vLog (LOG_WARNING,"iLedOpen() returns %d, unable to enabled leds !", ret);
+      xCtx.bLedEnabled = 0;
+    }
+  }
+
   // Enable the device to do the job
   gxPLDeviceEnable (device, true);
 
@@ -125,6 +137,14 @@ vMain (gxPLSetting * setting) {
     }
   }
 
+  if (xCtx.bLedEnabled) {
+    ret = iLedClose();
+    if (ret != 0) {
+
+      PWARNING ("Unable to close led device, error %d", ret);
+    }
+  }
+
   ret = iSensorClose (device);
   if (ret != 0) {
 
@@ -148,13 +168,14 @@ void
 vParseAdditionnalOptions (int argc, char *argv[]) {
   int c;
 
-  static const char short_options[] = "ahb:q::t::p::" GXPL_GETOPT;
+  static const char short_options[] = "Lahb:q::t::p::" GXPL_GETOPT;
   static struct option long_options[] = {
     {"bus",     required_argument, NULL, 's'},
     {"iaq",     optional_argument, NULL, 'q' },
     {"rht",     optional_argument, NULL, 't' },
     {"pm",     optional_argument, NULL, 'p' },
     {"aqi",     no_argument,       NULL, 'a' },
+    {"led",     no_argument,       NULL, 'L' },
     {"help",     no_argument,       NULL, 'h' },
     {NULL, 0, NULL, 0} /* End of array need by getopt_long do not delete it*/
   };
@@ -228,6 +249,11 @@ vParseAdditionnalOptions (int argc, char *argv[]) {
         }
         PDEBUG ("enabled gp2-i2c at 0x%02X (default)", xCtx.ucRhtAddr);
         break;
+
+      case 'L':
+        xCtx.bLedEnabled = 1;
+        PDEBUG ("enabled led for AQi");
+        // no break;
 
       case 'a':
         xCtx.bAqiEnabled = 1;

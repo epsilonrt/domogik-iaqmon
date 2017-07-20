@@ -67,6 +67,8 @@ struct xIaqMonContext {
   xQiList xQiCurrent;
   xQiList xQiLastTx;
 
+  uint16_t usLedLum;
+  
   time_t ulStatLastTime;
 
   gxPLMessage * xSensorMsg;
@@ -91,6 +93,8 @@ struct xIaqMonContext {
     uint16_t bPmRequest: 1;
     uint16_t bPmQiRequest: 1;
     uint16_t bPmSettingChanged: 1;
+    
+    uint16_t bLedEnabled: 1;
   };
 };
 typedef struct xIaqMonContext xIaqMonContext;
@@ -119,6 +123,14 @@ gxPLDevice * xDeviceCreate (gxPLSetting * setting);
 int iSensorOpen (gxPLDevice * device);
 int iSensorClose (gxPLDevice * device);
 int iSensorPoll (gxPLDevice * device);
+
+/*
+ * RGB Led Interface
+ */
+int iLedOpen (gxPLDevice * device);
+int iLedClose (void);
+int iLedSetColor (uint8_t aqi);
+int iLedSetLuminosity (uint16_t lum);
 
 /* ========================================================================== */
 #endif /* _DMG_IAQMON_HEADER_ defined */

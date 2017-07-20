@@ -289,6 +289,10 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
 
       return -1;
     }
+    if (xCtx.bLedEnabled) {
+
+      iLedSetColor (xCtx.xQiCurrent.ucAqi);
+    }
     xCtx.xQiLastTx.ucAqi = xCtx.xQiCurrent.ucAqi;
   }
 

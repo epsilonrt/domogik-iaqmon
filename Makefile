@@ -40,7 +40,7 @@ DISABLE_DELETE_UNUSED_SECTIONS = OFF
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC  = $(TARGET).c
-SRC += src/main.c src/sensor.c
+SRC += src/main.c src/sensor.c src/led.c
 SRC += src/device-config.c
 
 # List C++ source files here. (C++ dependencies are automatically generated.)

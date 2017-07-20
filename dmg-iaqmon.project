@@ -44,6 +44,7 @@
     <File Name="src/main.c"/>
     <File Name="src/sensor.c"/>
     <File Name="src/dmg-iaqmon.h"/>
+    <File Name="src/led.c"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
