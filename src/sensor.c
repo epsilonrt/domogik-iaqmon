@@ -77,6 +77,7 @@ prucHumidityQi (double value) {
 static void
 prvUpdateQiMax (xQiList * list) {
 
+  list->ucRaw[0] = 1;
   for (uint8_t i = 1; i < sizeof (xQiList); i++) {
 
     if (list->ucRaw[i] > list->ucRaw[0]) {
