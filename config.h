@@ -24,9 +24,9 @@ extern "C" {
 #define CFG_DAEMON_MAX_RESTARTS 100
 
 #define CFG_IQTH_PM  { 33, 58, 75, 91, 110 }
-#define CFG_IQTH_CO2 { 600, 800, 1200, 1700, 4000 }
+#define CFG_IQTH_CO2 { 800, 1200, 2500, 5000, 10000 }
 #define CFG_IQTH_VOC { 200, 400, 800, 1600, 3200 }
-#define CFG_IQTH_HUM { {50, 60}, {45, 65}, {40, 70}, {30, 80}, {20, 90}}
+#define CFG_IQTH_HUM { {40, 60}, {35, 65}, {30, 70}, {20, 80}, {10, 90}}
 
 #define CFG_XPL_POLL_RATE_MS    1000
 
@@ -58,7 +58,7 @@ extern "C" {
 #define CFG_SENSOR_HUM_ZERO_NAME  "hum-zero"
 
 // --- Capteur de CO2 et TVOC
-#define CFG_SENSOR_IAQ_POLL       (19)
+#define CFG_SENSOR_IAQ_POLL_RATE  19
 #define CFG_SENSOR_IAQ_DEVICE     "iaq"
 #define CFG_SENSOR_CO2_TYPE       "co2"
 #define CFG_SENSOR_CO2_UNIT       "ppm"
@@ -71,6 +71,7 @@ extern "C" {
 #define CFG_SENSOR_TVOC_GAP_NAME  "tvoc-gap"
 
 // --- Capteur de particules fines
+#define CFG_SENSOR_PM_POLL_RATE  23
 #define CFG_SENSOR_PM_DEVICE     "pm"
 #define CFG_SENSOR_PM_TYPE       "pm10"
 #define CFG_SENSOR_PM_UNIT       "ug_m3"
