@@ -45,6 +45,7 @@ extern "C" {
 #define CFG_SENSOR_HUM_ZERO_NAME  "hum-zero"
 
 // --- Capteur de CO2 et TVOC
+#define CFG_SENSOR_IAQ_POLL_RATE  19
 #define CFG_SENSOR_IAQ_DEVICE     "iaq"
 #define CFG_SENSOR_CO2_TYPE       "co2"
 #define CFG_SENSOR_CO2_UNIT       "ppm"
@@ -55,6 +56,7 @@ extern "C" {
 #define CFG_SENSOR_TVOC_GAP_NAME  "tvoc-gap"
 
 // --- Capteur de particules fines
+#define CFG_SENSOR_PM_POLL_RATE  23
 #define CFG_SENSOR_PM_DEVICE     "pm"
 #define CFG_SENSOR_PM_TYPE       "pm10"
 #define CFG_SENSOR_PM_UNIT       "ug_m3"

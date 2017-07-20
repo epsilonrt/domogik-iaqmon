@@ -18,12 +18,6 @@
 #include "dmg-iaqmon.h"
 #include "config.h"
 
-/* macros =================================================================== */
-/* constants ================================================================ */
-/* structures =============================================================== */
-/* types ==================================================================== */
-/* public variables ========================================================= */
-/* private variables ======================================================== */
 /* private functions ======================================================== */
 
 /* -----------------------------------------------------------------------------
@@ -65,7 +59,7 @@ priRhtRead (xHih6130Data * xHihCurrent) {
     xHihCurrent->dTemp -= xCtx.xRhtZero.dTemp;
     xHihCurrent->dHum -= xCtx.xRhtZero.dHum;
   }
-  
+
   return ret;
 }
 
@@ -85,10 +79,9 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
 
     if (ret < 0) {
 
-      return ret;
+      vLog (LOG_ERR, "iHih6130Read() returns %d, Unable to read RHT sensor !", ret);
     }
-
-    if (ret == 0) {
+    else if (ret == 0) {
 
       if (msgtype == gxPLMessageTrigger) {
 
@@ -109,18 +102,18 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
   if (xCtx.xIaqSensor) {
 
     // Mesure capteur IAQ
-    if ( (t - xCtx.ulIaqLastTime) > 11) {
+    if ( (t - xCtx.ulIaqLastTime) > CFG_SENSOR_IAQ_POLL_RATE) {
 
       ret = iIaqRead (xCtx.xIaqSensor, &xCtx.xIaqCurrent);
       if (ret < 0) {
 
-        return -1;
+        vLog (LOG_ERR, "iIaqRead() returns %d, Unable to read IAQ sensor !", ret);
       }
       else if (ret == 0) {
 
         xCtx.ulIaqLastTime = t;
         if (msgtype == gxPLMessageTrigger) {
-          
+
           if (abs ( (int) xCtx.xIaqCurrent.usCo2 - (int) xCtx.xIaqLastTx.usCo2) >= (int) xCtx.xIaqGap.usCo2) {
 
             xCtx.bCo2Request = 1;
@@ -143,19 +136,19 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
       xCtx.bPmSettingChanged = 0;
     }
 
-    if ( (t - xCtx.ulPmLastTime) > 11) {
+    if ( (t - xCtx.ulPmLastTime) > CFG_SENSOR_PM_POLL_RATE) {
 
       ret = iGp2Read (xCtx.xPmSensor);
       if (ret < 0) {
 
-        return -1;
+        vLog (LOG_ERR, "iGp2Read() returns %d, Unable to read PM sensor !", ret);
       }
       else {
 
         xCtx.ulPmLastTime = t;
         xCtx.iPmCurrent = ret;
         if (msgtype == gxPLMessageTrigger) {
-          
+
           if (abs (xCtx.iPmCurrent -  xCtx.iPmLastTx) >=  xCtx.iPmGap) {
 
             xCtx.bPmRequest = 1;
