@@ -290,6 +290,74 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
     xCtx.xQiLastTx.ucAqi = xCtx.xQiCurrent.ucAqi;
   }
 
+  if (xCtx.bCo2QiRequest) {
+
+    xCtx.bCo2QiRequest = 0;
+    gxPLMessageBodyClear (xCtx.xSensorMsg);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_IAQ_DEVICE);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_CQI_TYPE);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xQiCurrent.ucCo2);
+
+    // Broadcast the message
+    PDEBUG ("sensor broadcast co2 iq = %u", xCtx.xQiCurrent.ucCo2);
+    if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
+
+      return -1;
+    }
+    xCtx.xQiLastTx.ucCo2 = xCtx.xQiCurrent.ucCo2;
+  }
+
+  if (xCtx.bTvocQiRequest) {
+
+    xCtx.bTvocQiRequest = 0;
+    gxPLMessageBodyClear (xCtx.xSensorMsg);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_IAQ_DEVICE);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_TQI_TYPE);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xQiCurrent.ucVoc);
+
+    // Broadcast the message
+    PDEBUG ("sensor broadcast voc iq = %u", xCtx.xQiCurrent.ucVoc);
+    if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
+
+      return -1;
+    }
+    xCtx.xQiLastTx.ucVoc = xCtx.xQiCurrent.ucVoc;
+  }
+
+  if (xCtx.bPmQiRequest) {
+
+    xCtx.bPmQiRequest = 0;
+    gxPLMessageBodyClear (xCtx.xSensorMsg);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_PM_DEVICE);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_PQI_TYPE);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xQiCurrent.ucPm);
+
+    // Broadcast the message
+    PDEBUG ("sensor broadcast pm10 iq = %u", xCtx.xQiCurrent.ucPm);
+    if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
+
+      return -1;
+    }
+    xCtx.xQiLastTx.ucPm = xCtx.xQiCurrent.ucPm;
+  }
+
+  if ( (xCtx.bRhtUpdated) && (xCtx.bHumQiRequest) ) {
+
+    xCtx.bHumQiRequest = 0;
+    gxPLMessageBodyClear (xCtx.xSensorMsg);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_RHT_DEVICE);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_HQI_TYPE);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xQiCurrent.ucHum);
+
+    // Broadcast the message
+    PDEBUG ("sensor broadcast humidity iq = %u", xCtx.xQiCurrent.ucHum);
+    if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
+
+      return -1;
+    }
+    xCtx.xQiLastTx.ucHum = xCtx.xQiCurrent.ucHum;
+  }
+
   if (xCtx.bRhtUpdated) {
     if (xCtx.bTempRequest) {
 
@@ -324,23 +392,6 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
       }
       xCtx.xRhtLastTx.dHum = xCtx.xRhtCurrent.dHum;
     }
-
-    if (xCtx.bHumQiRequest) {
-
-      xCtx.bHumQiRequest = 0;
-      gxPLMessageBodyClear (xCtx.xSensorMsg);
-      gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_RHT_DEVICE);
-      gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_HQI_TYPE);
-      gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xQiCurrent.ucHum);
-
-      // Broadcast the message
-      PDEBUG ("sensor broadcast humidity iq = %u", xCtx.xQiCurrent.ucHum);
-      if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
-
-        return -1;
-      }
-      xCtx.xQiLastTx.ucHum = xCtx.xQiCurrent.ucHum;
-    }
   }
 
   if (xCtx.bCo2Request) {
@@ -361,23 +412,6 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
     xCtx.xIaqLastTx.usCo2 = xCtx.xIaqCurrent.usCo2;
   }
 
-  if (xCtx.bCo2QiRequest) {
-
-    xCtx.bCo2QiRequest = 0;
-    gxPLMessageBodyClear (xCtx.xSensorMsg);
-    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_IAQ_DEVICE);
-    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_CQI_TYPE);
-    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xQiCurrent.ucCo2);
-
-    // Broadcast the message
-    PDEBUG ("sensor broadcast co2 iq = %u", xCtx.xQiCurrent.ucCo2);
-    if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
-
-      return -1;
-    }
-    xCtx.xQiLastTx.ucCo2 = xCtx.xQiCurrent.ucCo2;
-  }
-
   if (xCtx.bTvocRequest) {
 
     xCtx.bTvocRequest = 0;
@@ -394,23 +428,6 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
       return -1;
     }
     xCtx.xIaqLastTx.usTvoc = xCtx.xIaqCurrent.usTvoc;
-  }
-
-  if (xCtx.bTvocQiRequest) {
-
-    xCtx.bTvocQiRequest = 0;
-    gxPLMessageBodyClear (xCtx.xSensorMsg);
-    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_IAQ_DEVICE);
-    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_TQI_TYPE);
-    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xQiCurrent.ucVoc);
-
-    // Broadcast the message
-    PDEBUG ("sensor broadcast voc iq = %u", xCtx.xQiCurrent.ucVoc);
-    if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
-
-      return -1;
-    }
-    xCtx.xQiLastTx.ucVoc = xCtx.xQiCurrent.ucVoc;
   }
 
   if (xCtx.bPmRequest) {
@@ -431,21 +448,20 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
     xCtx.iPmLastTx = xCtx.iPmCurrent;
   }
 
-  if (xCtx.bPmQiRequest) {
+  if (xCtx.bLedRequest) {
 
-    xCtx.bPmQiRequest = 0;
+    xCtx.bLedRequest = 0;
     gxPLMessageBodyClear (xCtx.xSensorMsg);
-    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_PM_DEVICE);
-    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_PQI_TYPE);
-    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.xQiCurrent.ucPm);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_LED_DEVICE);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_LUM_TYPE);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.usLedLum);
 
     // Broadcast the message
-    PDEBUG ("sensor broadcast pm10 iq = %u", xCtx.xQiCurrent.ucPm);
+    PDEBUG ("set led luminosity = %u", xCtx.usLedLum);
     if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
 
       return -1;
     }
-    xCtx.xQiLastTx.ucPm = xCtx.xQiCurrent.ucPm;
   }
 
   return 0;
@@ -484,6 +500,10 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
 
           xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
         }
+        else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_LUM_TYPE) == 0) {
+
+          xCtx.bLedRequest = xCtx.bLedEnabled;
+        }
       }
       else if (gxPLMessagePairExist (msg, "device") == true) {
 
@@ -502,6 +522,10 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
 
           xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
         }
+        else if (strcmp (gxPLMessagePairGet (msg, "device"), CFG_SENSOR_LED_DEVICE) == 0) {
+
+          xCtx.bLedRequest = xCtx.bLedEnabled;
+        }
       }
       else {
 
@@ -511,6 +535,13 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
         xCtx.bCo2Request = (xCtx.xIaqSensor != NULL);
         xCtx.bTvocRequest = (xCtx.xIaqSensor != NULL);
         xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
+
+        xCtx.bAqiRequest =  xCtx.bAqiEnabled;
+        xCtx.bCo2QiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
+        xCtx.bTvocQiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
+        xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;
+
+        xCtx.bLedRequest = xCtx.bLedEnabled;
 
         xCtx.ulStatLastTime = time (NULL);
       }
@@ -606,27 +637,43 @@ iSensorPoll (gxPLDevice * device) {
     if ( (t - xCtx.ulStatLastTime) > xCtx.ulStatInterval) {
 
       if (xCtx.xRhtSensor != NULL) {
+        int timeout = 20;
+        int ret = 0;
 
         if  (xCtx.bRhtUpdated == 0) {
-          int ret = -1;
 
-          priRhtStart();
+          if (priRhtStart () == 0) {
+            // Attente première mesure RHT
+            do {
 
-          // Attente première mesure RHT
-          while (ret != 0)  {
+              delay_ms (10);
+              timeout--;
+              ret = priRhtRead (&xCtx.xRhtCurrent);
+              if (ret < 0) {
 
-            ret = priRhtRead (&xCtx.xRhtCurrent);
-            if (ret < 0) {
+                return ret;
+              }
+              else if (ret == 0) {
 
-              return ret;
+                xCtx.bRhtUpdated = 1;
+              }
             }
+            while ( (ret == HIH6130_BUSY) && (timeout) );
           }
-          xCtx.bRhtUpdated = 1;
         }
 
-        xCtx.bTempRequest = 1;
-        xCtx.bHumRequest = 1;
-        xCtx.bHumQiRequest = xCtx.bAqiEnabled;
+        if (timeout) {
+
+          xCtx.bTempRequest = 1;
+          xCtx.bHumRequest = 1;
+          xCtx.bHumQiRequest = xCtx.bAqiEnabled;
+        }
+        else {
+
+          iHih6130Close (xCtx.xRhtSensor);
+          xCtx.xRhtSensor = NULL;
+          vLog (LOG_ERR, "RHT sensor Timeout, has been deactivated !");
+        }
       }
 
       // Toutes les mesures seront envoyées
@@ -637,6 +684,7 @@ iSensorPoll (gxPLDevice * device) {
       xCtx.bTvocQiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
       xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
       xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;
+      xCtx.bLedRequest = xCtx.bLedEnabled;
 
       xCtx.ulStatLastTime = t;
       return priSendCurrentValue (device, gxPLMessageStatus);

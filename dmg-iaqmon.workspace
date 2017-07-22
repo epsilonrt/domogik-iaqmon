@@ -3,11 +3,11 @@
   <Project Name="dmg-iaqmon" Path="dmg-iaqmon.project" Active="Yes"/>
   <Project Name="dmg-iaqmon-init" Path="init/dmg-iaqmon-init.project" Active="No"/>
   <BuildMatrix>
-    <WorkspaceConfiguration Name="Debug" Selected="no">
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="dmg-iaqmon" ConfigName="Debug"/>
       <Project Name="dmg-iaqmon-init" ConfigName="Debug"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Release" Selected="yes">
+    <WorkspaceConfiguration Name="Release" Selected="no">
       <Project Name="dmg-iaqmon" ConfigName="Release"/>
       <Project Name="dmg-iaqmon-init" ConfigName="Release"/>
     </WorkspaceConfiguration>

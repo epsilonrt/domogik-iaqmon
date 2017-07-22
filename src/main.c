@@ -85,15 +85,6 @@ vMain (gxPLSetting * setting) {
   // take the application to be able to close
   app = gxPLDeviceParent (device);
 
-  // Sensor init.
-  ret = iSensorOpen (device);
-  if (ret != 0) {
-
-    vLog (LOG_ERR, "Unable to setting up sensor, error %d", ret);
-    gxPLAppClose (app);
-    exit (EXIT_FAILURE);
-  }
-
   // Leds for display AQI
   if (xCtx.bLedEnabled) {
     
@@ -103,6 +94,16 @@ vMain (gxPLSetting * setting) {
       vLog (LOG_WARNING,"iLedOpen() returns %d, unable to enabled leds !", ret);
       xCtx.bLedEnabled = 0;
     }
+  }
+
+  // Sensor init.
+  ret = iSensorOpen (device);
+  if (ret != 0) {
+
+    vLog (LOG_ERR, "Unable to setting up sensor, error %d", ret);
+    iLedClose();
+    gxPLAppClose (app);
+    exit (EXIT_FAILURE);
   }
 
   // Enable the device to do the job

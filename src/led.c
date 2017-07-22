@@ -49,7 +49,7 @@ prvControlBasicListener (gxPLDevice * device, gxPLMessage * msg, void * udata) {
 
 
     if ( (strcmp (dev, CFG_SENSOR_LED_DEVICE) == 0) &&
-         (strcmp (type, CFG_SENSOR_LUM_TYPE) == 0) ) {
+         (strcmp (type, CFG_SENSOR_LUM_TYPE) == 0) && xCtx.bLedEnabled) {
       long n;
       const char * current = gxPLMessagePairGet (msg, "current");
 
@@ -64,15 +64,7 @@ prvControlBasicListener (gxPLDevice * device, gxPLMessage * msg, void * udata) {
             if (iLedSetLuminosity (usLedLum) == 0) {
 
               xCtx.usLedLum = usLedLum;
-              gxPLMessageTypeSet (xCtx.xSensorMsg, gxPLMessageTrigger);
-              gxPLMessageBodyClear (xCtx.xSensorMsg);
-              gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_LED_DEVICE);
-              gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_LUM_TYPE);
-              gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.usLedLum);
-
-              // Broadcast the message
-              PDEBUG ("set led luminosity = %u", xCtx.usLedLum);
-              gxPLDeviceMessageSend (device, xCtx.xSensorMsg);
+              xCtx.bLedRequest = 1;
             }
           }
         }
