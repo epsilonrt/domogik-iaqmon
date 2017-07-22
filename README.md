@@ -29,6 +29,12 @@ les réseaux pris en charge par cette librairie (UDP/IP, XBee-ZB ...)
 Il a été développé sur un [Raspberry Pi](https://www.raspberrypi.org/) 
 mais peut être installé sur n'importe quelle cible suportée par SysIo et gxPL.
 
+**IMPORTANT**
+
+Le Soc du Raspberry Pi ne supporte pas le [clock stretching](http://www.advamation.com/knowhow/raspberrypi/rpi-i2c-bug.html)
+qui est nécessaire pour le capteur IAQ-Core P et le module gp2-i2c. Il faut 
+donc réduire la vitesse du bus I²C à 25 Khz pour que les capteurs fonctionnent.
+
 ## Installation
 
 ### Pré-requis
@@ -54,7 +60,6 @@ Pour automatiser le démarrage et l'arrêt, il est possible d'installer le scrip
 
 ## Commande
 
-    dmg-iaqmon - xPL Indoor Air Quality Monitor
     Copyright (c) 2016-2017 epsilonRT
 
     Usage: dmg-iaqmon [-i interface] [-n iolayer] [-W timeout] [-b i2cbus] [-q [address]] [-t [address]] [-D] [-d] [-h]
@@ -73,6 +78,8 @@ Pour automatiser le démarrage et l'arrêt, il est possible d'installer le scrip
                      supplied, otherwise default is 0x28.
       -p [address] - enable gp2-i2c sensor, the address on the bus can be
                      supplied, otherwise default is 0x46.
+      -a           - enable broadcasting the air quality index (AQI)
+      -L           - enable RGB leds to display the air quality index (AQI)
       -h           - print this message
 
 Pour lancer le daemon en mode débugage avec gestion d'un capteur IAQ Core P et 
