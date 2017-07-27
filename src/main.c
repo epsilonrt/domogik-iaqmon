@@ -13,6 +13,7 @@
  * @file
  * @brief Surveillance de qualité de l'air - programme principal
  */
+#include <math.h>
 #include <signal.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -50,7 +51,9 @@ prvPrintUsage (void) {
   printf ("  -p [address] - enable gp2-i2c sensor, the address on the bus can be\n"
           "                 supplied, otherwise default is 0x%02X.\n", CFG_DEFAULT_PM_ADDR);
   printf ("  -a           - enable broadcasting the air quality index (AQI)\n");
-  printf ("  -L           - enable RGB leds to display the air quality index (AQI)\n");
+  printf ("  -L [lum]     - enable RGB leds to display the air quality index (AQI),\n"
+          "                 The maximum brightness can be provided [0,1023], default is %d\n",
+          CFG_DEFAULT_LED_MAX);
   printf ("  -h           - print this message\n\n");
 }
 
@@ -72,7 +75,7 @@ vMain (gxPLSetting * setting) {
   gxPLDevice * device;
   gxPLApplication * app;
 
-  PNOTICE ("starting epsirt-iaqmon... (%s log)", sLogPriorityStr (setting->log) );
+  PNOTICE ("starting dmg-iaqmon... (%s log)", sLogPriorityStr (setting->log) );
 
   // Create xPL application and device
   device = xDeviceCreate (setting);
@@ -87,11 +90,19 @@ vMain (gxPLSetting * setting) {
 
   // Leds for display AQI
   if (xCtx.bLedEnabled) {
-    
-    ret = iLedOpen(device);
+
+    if (xCtx.usLedMaxToForce) {
+
+      xCtx.usLedMax = xCtx.usLedMaxToForce;
+      gxPLDeviceConfigValueSet (device, CFG_SENSOR_LED_MAX_NAME,
+                                gxPLLongToStr (xCtx.usLedMax) );
+      gxPLDeviceConfigSave (device);
+    }
+
+    ret = iLedOpen (device);
     if (ret != 0) {
 
-      vLog (LOG_WARNING,"iLedOpen() returns %d, unable to enabled leds !", ret);
+      vLog (LOG_WARNING, "iLedOpen() returns %d, unable to enabled leds !", ret);
       xCtx.bLedEnabled = 0;
     }
   }
@@ -114,10 +125,10 @@ vMain (gxPLSetting * setting) {
   signal (SIGINT, prvSignalHandler);
 
   if (setting->nodaemon == 0) {
-    
+
     vLogDaemonize (true);
   }
-  
+
   while (bMainIsRun) {
 
     // Main Loop
@@ -134,6 +145,23 @@ vMain (gxPLSetting * setting) {
       if (ret != 0) {
 
         PWARNING ("Unable to poll sensor, error %d", ret);
+      }
+
+      if ( (xCtx.bLedEnabled) && (xCtx.bLedChanged) ) {
+        float f = (float) xCtx.usLedMax * (float) xCtx.ucLedSlider / 255.0;
+        uint16_t lum = (uint16_t) floorf (f);
+
+        ret = iLedSetLuminosity (lum);
+        if (ret == 0) {
+
+          xCtx.bLedChanged = 0;
+          xCtx.bLedRequest = 1;
+          PDEBUG ("set led luminosity = %u", lum);
+        }
+        else {
+
+          PWARNING ("Unable to set led luminosity, error %d", ret);
+        }
       }
     }
   }
@@ -166,18 +194,18 @@ vMain (gxPLSetting * setting) {
 
 // -----------------------------------------------------------------------------
 void
-vParseAdditionnalOptions (int argc, char *argv[]) {
+vParseAdditionnalOptions (int argc, char * argv[]) {
   int c;
 
-  static const char short_options[] = "Lahb:q::t::p::" GXPL_GETOPT;
+  static const char short_options[] = "ahb:q::t::p::L::" GXPL_GETOPT;
   static struct option long_options[] = {
-    {"bus",     required_argument, NULL, 's'},
-    {"iaq",     optional_argument, NULL, 'q' },
-    {"rht",     optional_argument, NULL, 't' },
-    {"pm",     optional_argument, NULL, 'p' },
-    {"aqi",     no_argument,       NULL, 'a' },
-    {"led",     no_argument,       NULL, 'L' },
-    {"help",     no_argument,       NULL, 'h' },
+    {"bus",   required_argument, NULL, 's'},
+    {"iaq",   optional_argument, NULL, 'q' },
+    {"rht",   optional_argument, NULL, 't' },
+    {"pm",    optional_argument, NULL, 'p' },
+    {"aqi",   no_argument,       NULL, 'a' },
+    {"led",   optional_argument, NULL, 'L' },
+    {"help",  no_argument,       NULL, 'h' },
     {NULL, 0, NULL, 0} /* End of array need by getopt_long do not delete it*/
   };
 
@@ -254,13 +282,24 @@ vParseAdditionnalOptions (int argc, char *argv[]) {
       case 'L':
         xCtx.bLedEnabled = 1;
         PDEBUG ("enabled led for AQi");
+        if (optarg) {
+          long n;
+
+          if (iStrToLong (optarg, &n, 0) == 0) {
+            if ( (n >= 0) && (n <= 1023) ) {
+
+              xCtx.usLedMaxToForce = (uint16_t) n;
+              PDEBUG ("set max. led brightness to %d", xCtx.usLedMaxToForce);
+            }
+          }
+        }
         // no break;
 
       case 'a':
         xCtx.bAqiEnabled = 1;
         PDEBUG ("enabled broadcasting AQi");
         break;
-        
+
       case 'h':
         prvPrintUsage();
         exit (EXIT_SUCCESS);

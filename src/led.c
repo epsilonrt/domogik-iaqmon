@@ -50,22 +50,50 @@ prvControlBasicListener (gxPLDevice * device, gxPLMessage * msg, void * udata) {
 
     if ( (strcmp (dev, CFG_SENSOR_LED_DEVICE) == 0) &&
          (strcmp (type, CFG_SENSOR_LUM_TYPE) == 0) && xCtx.bLedEnabled) {
-      long n;
       const char * current = gxPLMessagePairGet (msg, "current");
+      /*
+        nn = set to value (0-255)
+        +nn = increment by nn
+        -nn = decrement by nn
+        nn% = set to nn (where nn is a percentage - 0-100%)
+       */
+      size_t len = strlen (current);
 
-      if (iStrToLong (current, &n, 0) == 0) {
+      if (len > 0) {
+        long n;
 
-        if ( (n >= 0) && (n <= 1023) ) {
+        if (iStrToLong (current, &n, 0) == 0) {
+          uint8_t ucSlider;
+          long s = xCtx.ucLedSlider;
 
-          uint16_t usLedLum = (uint16_t) n;
+          if  ((current[0] == '+') || (current[0] == '-')) {
 
-          if (xCtx.usLedLum != usLedLum) {
+            s += n;
+          }
+          else if (current[len - 1] == '%') {
 
-            if (iLedSetLuminosity (usLedLum) == 0) {
+            s = (n * 255) / 100;
+          }
+          else {
 
-              xCtx.usLedLum = usLedLum;
-              xCtx.bLedRequest = 1;
-            }
+            s = n;
+          }
+
+          if (s < 0) {
+
+            s = 0;
+          }
+          else if (s > 255) {
+
+            s = 255;
+          }
+
+          ucSlider = (uint8_t) s;
+          if (ucSlider != xCtx.ucLedSlider) {
+            
+            PDEBUG ("set led slider = %u", ucSlider);
+            xCtx.ucLedSlider = ucSlider;
+            xCtx.bLedChanged = 1;
           }
         }
       }
@@ -151,8 +179,11 @@ iLedOpen (gxPLDevice * device) {
 
   gxPLDeviceListenerAdd (device, prvControlBasicListener,
                          gxPLMessageCommand, "control", "basic", NULL);
-  xCtx.usLedLum = CFG_DEFAULT_LED_LUM;
-  return iLedSetLuminosity (xCtx.usLedLum);
+
+
+  xCtx.ucLedSlider = 128;
+  xCtx.bLedChanged = 1;
+  return 0;
 }
 
 // -----------------------------------------------------------------------------

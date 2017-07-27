@@ -62,7 +62,7 @@
       </Compiler>
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/dmg-iaqmon" IntermediateDirectory="." Command="$(IntermediateDirectory)/dmg-iaqmon" CommandArguments="-D -ddd -q -t -p -L" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/dmg-iaqmon" IntermediateDirectory="." Command="$(IntermediateDirectory)/dmg-iaqmon" CommandArguments="-D -ddd -L256 -q -t -p " UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>

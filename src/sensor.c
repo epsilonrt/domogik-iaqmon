@@ -23,7 +23,7 @@
 // -----------------------------------------------------------------------------
 static uint8_t
 prucCo2Qi (int value) {
-  static int th[] = CFG_IQTH_CO2;
+  static int th[] = CFG_QITH_CO2;
   uint8_t iq = 0;
 
   while ( (value > th[iq]) && (iq < 5) ) {
@@ -35,7 +35,7 @@ prucCo2Qi (int value) {
 // -----------------------------------------------------------------------------
 static uint8_t
 prucVocQi (int value) {
-  static int th[] = CFG_IQTH_VOC;
+  static int th[] = CFG_QITH_VOC;
   uint8_t iq = 0;
 
   while ( (value > th[iq]) && (iq < 5) ) {
@@ -47,7 +47,7 @@ prucVocQi (int value) {
 // -----------------------------------------------------------------------------
 static uint8_t
 prucPmQi (int value) {
-  static int th[] = CFG_IQTH_PM;
+  static int th[] = CFG_QITH_PM;
   uint8_t iq = 0;
 
   while ( (value > th[iq]) && (iq < 5) ) {
@@ -59,7 +59,7 @@ prucPmQi (int value) {
 // -----------------------------------------------------------------------------
 static uint8_t
 prucHumidityQi (double value) {
-  static double th[][2] = CFG_IQTH_HUM;
+  static double th[][2] = CFG_QITH_HUM;
   uint8_t iq = 0;
 
   double min = th[iq][0];
@@ -80,7 +80,7 @@ prvUpdateQiMax (xQiList * list) {
   list->ucRaw[0] = 1;
   for (uint8_t i = 1; i < sizeof (xQiList); i++) {
 
-    if (list->ucRaw[i] > list->ucRaw[0]) {
+    if ( (xCtx.ucFlag & _BV (i - 1) ) && (list->ucRaw[i] > list->ucRaw[0]) ) {
 
       list->ucRaw[0] = list->ucRaw[i];
     }
@@ -454,10 +454,9 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
     gxPLMessageBodyClear (xCtx.xSensorMsg);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_LED_DEVICE);
     gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_LUM_TYPE);
-    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.usLedLum);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.ucLedSlider);
 
     // Broadcast the message
-    PDEBUG ("set led luminosity = %u", xCtx.usLedLum);
     if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
 
       return -1;
@@ -487,18 +486,22 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
         else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_HUM_TYPE) == 0) {
 
           xCtx.bHumRequest = (xCtx.xRhtSensor != NULL);
+          xCtx.bHumQiRequest = (xCtx.xRhtSensor != NULL) && xCtx.bAqiEnabled;
         }
         else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_CO2_TYPE) == 0) {
 
           xCtx.bCo2Request = (xCtx.xIaqSensor != NULL);
+          xCtx.bCo2QiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
         }
         else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_TVOC_TYPE) == 0) {
 
           xCtx.bTvocRequest = (xCtx.xIaqSensor != NULL);
+          xCtx.bTvocQiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
         }
         else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_PM_TYPE) == 0) {
 
           xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
+          xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;
         }
         else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_LUM_TYPE) == 0) {
 
@@ -512,15 +515,19 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
 
           xCtx.bTempRequest = (xCtx.xRhtSensor != NULL);
           xCtx.bHumRequest = (xCtx.xRhtSensor != NULL);
+          xCtx.bHumQiRequest = (xCtx.xRhtSensor != NULL) && xCtx.bAqiEnabled;
         }
         else if (strcmp (gxPLMessagePairGet (msg, "device"), CFG_SENSOR_IAQ_DEVICE) == 0) {
 
           xCtx.bCo2Request = (xCtx.xIaqSensor != NULL);
+          xCtx.bCo2QiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
           xCtx.bTvocRequest = (xCtx.xIaqSensor != NULL);
+          xCtx.bTvocQiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
         }
         else if (strcmp (gxPLMessagePairGet (msg, "device"), CFG_SENSOR_PM_DEVICE) == 0) {
 
           xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
+          xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;
         }
         else if (strcmp (gxPLMessagePairGet (msg, "device"), CFG_SENSOR_LED_DEVICE) == 0) {
 
@@ -537,6 +544,7 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
         xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
 
         xCtx.bAqiRequest =  xCtx.bAqiEnabled;
+        xCtx.bHumQiRequest = (xCtx.xRhtSensor != NULL) && xCtx.bAqiEnabled;
         xCtx.bCo2QiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
         xCtx.bTvocQiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
         xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;

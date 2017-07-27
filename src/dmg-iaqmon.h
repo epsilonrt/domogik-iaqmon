@@ -67,35 +67,43 @@ struct xIaqMonContext {
   xQiList xQiCurrent;
   xQiList xQiLastTx;
 
-  uint16_t usLedLum;
-  
+  uint16_t usLedMaxToForce; // from command line
+  uint16_t usLedMax; // configurable 0-1023
+  uint8_t ucLedSlider; // 0-255
+
   time_t ulStatLastTime;
 
   gxPLMessage * xSensorMsg;
+  uint8_t ucFlag;
+#define IAQF_CO2 1
+#define IAQF_VOC 2
+#define IAQF_PM  4
+#define IAQF_HUM 8
   struct {
     uint16_t bRhtStarted: 1; // Mesure démarrée
     uint16_t bRhtUpdated: 1; // 1ère mesure effectuée
 
     uint16_t bAqiEnabled: 1;
     uint16_t bAqiRequest: 1;
-    
+
     uint16_t bTempRequest: 1;
-    
+
     uint16_t bHumRequest: 1;
     uint16_t bHumQiRequest: 1;
-    
+
     uint16_t bCo2Request: 1;
     uint16_t bCo2QiRequest: 1;
-    
+
     uint16_t bTvocRequest: 1;
     uint16_t bTvocQiRequest: 1;
-    
+
     uint16_t bPmRequest: 1;
     uint16_t bPmQiRequest: 1;
     uint16_t bPmSettingChanged: 1;
-    
+
     uint16_t bLedEnabled: 1;
     uint16_t bLedRequest: 1;
+    uint16_t bLedChanged: 1;
   };
 };
 typedef struct xIaqMonContext xIaqMonContext;

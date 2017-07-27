@@ -23,10 +23,10 @@ extern "C" {
 #define CFG_LOG_LEVEL           LOG_INFO
 #define CFG_DAEMON_MAX_RESTARTS 100
 
-#define CFG_IQTH_PM  { 33, 58, 75, 91, 110 }
-#define CFG_IQTH_CO2 { 800, 1200, 2500, 5000, 10000 }
-#define CFG_IQTH_VOC { 200, 400, 800, 1600, 3200 }
-#define CFG_IQTH_HUM { {40, 60}, {35, 65}, {30, 70}, {20, 80}, {10, 90}}
+#define CFG_QITH_PM  { 33, 58, 75, 91, 110 }
+#define CFG_QITH_CO2 { 800, 1200, 2500, 5000, 10000 }
+#define CFG_QITH_VOC { 200, 400, 800, 1600, 3200 }
+#define CFG_QITH_HUM { {40, 60}, {35, 65}, {30, 70}, {20, 80}, {10, 90}}
 
 #define CFG_XPL_POLL_RATE_MS    1000
 
@@ -38,12 +38,19 @@ extern "C" {
 
 #define CFG_SENSOR_STAT_INTERVAL_NAME  "stat-interval"
 
-// --- Capteur de température et d'humidité
+// --- Qualité de l'air globale
 #define CFG_SENSOR_AQI_DEVICE     "aqi"
 #define CFG_SENSOR_AQI_TYPE       "aqi"
 
+// Paramètres configurables par xPL
+#define CFG_SENSOR_FLAG_NAME  "flag"
+
+// --- Leds RGB
 #define CFG_SENSOR_LED_DEVICE     "led"
-#define CFG_SENSOR_LUM_TYPE       "luminosity"
+#define CFG_SENSOR_LUM_TYPE       "slider"
+
+// Paramètres configurables par xPL
+#define CFG_SENSOR_LED_MAX_NAME  "led-max"
 
 // --- Capteur de température et d'humidité
 #define CFG_SENSOR_RHT_DEVICE     "rht"
@@ -106,7 +113,8 @@ extern "C" {
 #define CFG_DEFAULT_LED_LED4_RED   6
 #define CFG_DEFAULT_LED_LED4_GREEN 7
 #define CFG_DEFAULT_LED_LED4_BLUE  8
-#define CFG_DEFAULT_LED_LUM       32
+
+#define CFG_DEFAULT_LED_MAX       512
 
 // Paramètres xPL
 #define CFG_DEFAULT_STAT_INTERVAL  300 // 0 pas de message stat périodique
@@ -125,6 +133,9 @@ extern "C" {
 #define CFG_DEFAULT_PM_D1         0.0
 #define CFG_DEFAULT_PM_V2         3000.0
 #define CFG_DEFAULT_PM_D2         400.0
+
+//#define CFG_DEFAULT_FLAG      (IAQF_CO2 | IAQF_VOC | IAQF_PM | IAQF_HUM)
+#define CFG_DEFAULT_FLAG      (IAQF_CO2 | IAQF_VOC | IAQF_PM)
 
 /* build options ============================================================ */
 

@@ -2,11 +2,11 @@
  * Copyright © 2016 epsilonRT, All rights reserved.
  *
  * This software is governed by the CeCILL license under French law and
- * abiding by the rules of distribution of free software.  You can  use, 
+ * abiding by the rules of distribution of free software.  You can  use,
  * modify and/ or redistribute the software under the terms of the CeCILL
  * license as circulated by CEA, CNRS and INRIA at the following URL
- * <http://www.cecill.info>. 
- * 
+ * <http://www.cecill.info>.
+ *
  * The fact that you are presently reading this means that you have had
  * knowledge of the CeCILL license and that you accept its terms.
  *
@@ -36,7 +36,7 @@ prvDeviceSetConfig (gxPLDevice * device) {
 
       xCtx.ulStatInterval = (time_t) n;
       if (xCtx.ulStatInterval != 0) {
-        
+
         // période stat non nulle, on va envoyer un message stat
         xCtx.ulStatLastTime = 0;
       }
@@ -85,7 +85,7 @@ prvDeviceSetConfig (gxPLDevice * device) {
 
     if (iStrToLong (str, &n, 0) == 0) {
 
-      if ((n <= UINT16_MAX) && (n > 0)) {
+      if ( (n <= UINT16_MAX) && (n > 0) ) {
 
         xCtx.xIaqGap.usCo2 = (uint16_t) n;
       }
@@ -98,7 +98,7 @@ prvDeviceSetConfig (gxPLDevice * device) {
 
     if (iStrToLong (str, &n, 0) == 0) {
 
-      if ((n <= UINT16_MAX) && (n > 0)) {
+      if ( (n <= UINT16_MAX) && (n > 0) ) {
 
         xCtx.xIaqGap.usTvoc = (uint16_t) n;
       }
@@ -147,11 +147,44 @@ prvDeviceSetConfig (gxPLDevice * device) {
   str = gxPLDeviceConfigValueGet (device, CFG_SENSOR_PM_D2_NAME);
   if (str) {
     double d;
-    
+
     if (iStrToDouble (str, &d) == 0) {
 
       xCtx.xPmSetting.dD2 = d;
       xCtx.bPmSettingChanged = 1;
+    }
+  }
+
+  str = gxPLDeviceConfigValueGet (device, CFG_SENSOR_FLAG_NAME);
+  if (str) {
+    long n;
+
+    if (iStrToLong (str, &n, 0) == 0) {
+
+      if ( (n <= (IAQF_CO2 | IAQF_VOC | IAQF_PM | IAQF_HUM) ) && (n >= 0) ) {
+
+        xCtx.ucFlag = (uint8_t) n;
+      }
+    }
+  }
+
+  str = gxPLDeviceConfigValueGet (device, CFG_SENSOR_LED_MAX_NAME);
+  if (str) {
+    long n;
+
+    if (iStrToLong (str, &n, 0) == 0) {
+
+      if ( (n <= 1023)  && (n >= 0) ) {
+
+        uint16_t usLedMax = (uint16_t) n;
+
+        if (xCtx.usLedMax != usLedMax) {
+
+          xCtx.usLedMax = usLedMax;
+          xCtx.bLedChanged = 1;
+          PDEBUG ("set led max luminosity = %u", usLedMax);
+        }
+      }
     }
   }
 }
@@ -161,7 +194,7 @@ prvDeviceSetConfig (gxPLDevice * device) {
 static void
 prvDeviceConfigChanged (gxPLDevice * device, void * udata) {
 
-  gxPLMessageSourceInstanceIdSet (xCtx.xSensorMsg, gxPLDeviceInstanceId (device));
+  gxPLMessageSourceInstanceIdSet (xCtx.xSensorMsg, gxPLDeviceInstanceId (device) );
 
   // Read setting items for device and install
   prvDeviceSetConfig (device);
@@ -187,7 +220,7 @@ xDeviceCreate (gxPLSetting * setting) {
   // Create a configurable device and set our application version
   device = gxPLAppAddConfigurableDevice (app, CFG_XPL_VENDOR_ID,
                                          CFG_XPL_DEVICE_ID,
-                                         gxPLConfigPath (CFG_XPL_CONFIG_FILENAME));
+                                         gxPLConfigPath (CFG_XPL_CONFIG_FILENAME) );
   if (device == NULL) {
 
     return NULL;
@@ -203,52 +236,59 @@ xDeviceCreate (gxPLSetting * setting) {
     // Define configurable items and give it a default
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_STAT_INTERVAL_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_STAT_INTERVAL_NAME,
-                              gxPLLongToStr (CFG_DEFAULT_STAT_INTERVAL));
+                              gxPLLongToStr (CFG_DEFAULT_STAT_INTERVAL) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_TEMP_GAP_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_TEMP_GAP_NAME,
-                              gxPLDoubleToStr (CFG_DEFAULT_TEMP_GAP, 1));
+                              gxPLDoubleToStr (CFG_DEFAULT_TEMP_GAP, 1) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_TEMP_ZERO_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_TEMP_ZERO_NAME,
-                              gxPLDoubleToStr (CFG_DEFAULT_TEMP_ZERO, 1));
+                              gxPLDoubleToStr (CFG_DEFAULT_TEMP_ZERO, 1) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_HUM_GAP_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_HUM_GAP_NAME,
-                              gxPLDoubleToStr (CFG_DEFAULT_HUM_GAP, 1));
+                              gxPLDoubleToStr (CFG_DEFAULT_HUM_GAP, 1) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_HUM_ZERO_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_HUM_ZERO_NAME,
-                              gxPLDoubleToStr (CFG_DEFAULT_HUM_ZERO, 1));
+                              gxPLDoubleToStr (CFG_DEFAULT_HUM_ZERO, 1) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_CO2_GAP_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_CO2_GAP_NAME,
-                              gxPLLongToStr (CFG_DEFAULT_CO2_GAP));
+                              gxPLLongToStr (CFG_DEFAULT_CO2_GAP) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_TVOC_GAP_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_TVOC_GAP_NAME,
-                              gxPLLongToStr (CFG_DEFAULT_TVOC_GAP));
+                              gxPLLongToStr (CFG_DEFAULT_TVOC_GAP) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_GAP_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_GAP_NAME,
-                              gxPLLongToStr (CFG_DEFAULT_PM_GAP));
+                              gxPLLongToStr (CFG_DEFAULT_PM_GAP) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_V1_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_V1_NAME,
-                              gxPLDoubleToStr (CFG_DEFAULT_PM_V1, 1));
+                              gxPLDoubleToStr (CFG_DEFAULT_PM_V1, 1) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_V2_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_V2_NAME,
-                              gxPLDoubleToStr (CFG_DEFAULT_PM_V2, 1));
+                              gxPLDoubleToStr (CFG_DEFAULT_PM_V2, 1) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_D1_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_D1_NAME,
-                              gxPLDoubleToStr (CFG_DEFAULT_PM_D1, 1));
+                              gxPLDoubleToStr (CFG_DEFAULT_PM_D1, 1) );
 
     gxPLDeviceConfigItemAdd (device, CFG_SENSOR_PM_D2_NAME, gxPLConfigReconf, 1);
     gxPLDeviceConfigValueSet (device, CFG_SENSOR_PM_D2_NAME,
-                              gxPLDoubleToStr (CFG_DEFAULT_PM_D2, 1));
+                              gxPLDoubleToStr (CFG_DEFAULT_PM_D2, 1) );
 
+    gxPLDeviceConfigItemAdd (device, CFG_SENSOR_FLAG_NAME, gxPLConfigReconf, 1);
+    gxPLDeviceConfigValueSet (device, CFG_SENSOR_FLAG_NAME,
+                              gxPLLongToStr (CFG_DEFAULT_FLAG) );
+
+    gxPLDeviceConfigItemAdd (device, CFG_SENSOR_LED_MAX_NAME, gxPLConfigReconf, 1);
+    gxPLDeviceConfigValueSet (device, CFG_SENSOR_LED_MAX_NAME,
+                              gxPLLongToStr (CFG_DEFAULT_LED_MAX) );
   }
 
   // Create a sensor.basic message conforming to http://xplproject.org.uk/wiki/Schema_-_SENSOR.html
