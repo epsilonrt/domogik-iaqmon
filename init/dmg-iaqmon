@@ -27,6 +27,7 @@ IAQ=
 PM=
 AQI=
 LED=
+WAVE=
 
 test -x $DAEMON || exit 0
 
@@ -53,17 +54,17 @@ set_args () {
     ifconfig $var > /dev/null 2>&1 && XPL_IF=$var
   fi
   if [ "_$XPL_IF" != "_" ]; then
-    XPL_IF="-i $XPL_IF"
+    XPL_IF="-i$XPL_IF"
   fi
   
   var=$(trim "$(grep 'net' $tmpf | cut -d '=' -f2)")
   if [ "$var" = "udp" ] || [ "$var" = "xbeezb" ]; then
-    XPL_NET="-n $var"
+    XPL_NET="-n$var"
   fi
 
   var=$(trim "$(grep 'i2c_bus' $tmpf | cut -d '=' -f2)")
   if [ "_$var" != "_" ]; then
-    I2C_BUS="-b $var"
+    I2C_BUS="-b$var"
   fi
 
   var=$(trim "$(grep 'rht' $tmpf | cut -d '=' -f2)")
@@ -71,7 +72,7 @@ set_args () {
     if [ "$var" = "default" ]; then
       RHT="-t"
     else
-      RHT="-t $var"
+      RHT="-t$var"
     fi
   fi
 
@@ -80,7 +81,7 @@ set_args () {
     if [ "$var" = "default" ]; then
       IAQ="-q"
     else
-      IAQ="-q $var"
+      IAQ="-q$var"
     fi
   fi
 
@@ -89,7 +90,7 @@ set_args () {
     if [ "$var" = "default" ]; then
       PM="-p"
     else
-      PM="-p $var"
+      PM="-p$var"
     fi
   fi
 
@@ -106,6 +107,15 @@ set_args () {
   var=$(trim "$(grep 'led' $tmpf | cut -d '=' -f2)")
   if [ "$var" = "1" ] || [ "$var" = "true" ]; then
     LED=-L
+  fi
+
+  var=$(trim "$(grep 'wave' $tmpf | cut -d '=' -f2)")
+  if [ "_$var" != "_" ]; then
+    if [ "$var" = "default" ]; then
+      PM="-w"
+    else
+      PM="-w$var"
+    fi
   fi
 
   rm -f $tmpf
