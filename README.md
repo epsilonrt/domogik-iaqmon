@@ -28,7 +28,7 @@ Il peut informer l'utilisateur de la qualité de l'air à l'aide leds RGB. Les
 couleurs sont { bleu, vert, jaune, orange, violet, rouge } et correspondent à
 l'indice de qualité de l'air entre 1 (Très bon) et 6 (Très mauvais). Les leds
 sont contrôlées par un circuit TLC59116 et cette fonctionnalité doit être 
-explicitement validées lors du
+explicitement validées lors du lancement du daemon.
 
 **dmg-iaqmon** utilise [gxPL](https://github.com/epsilonrt/gxPL) 
 pour gérer le protocole xPL ce qui lui permet de diffuser ses mesures sur tous 
@@ -90,6 +90,8 @@ Pour automatiser le démarrage et l'arrêt, il est possible d'installer le scrip
       -a           - enable broadcasting the air quality index (AQI)
       -L [lum]     - enable RGB leds to display the air quality index (AQI),
                      The maximum brightness can be provided [0,1023], default is 512
+      -w [period]  - enable RGB leds wave effect,
+                     The wave period can be provided in seconds, default is 60
       -h           - print this message
 
 Pour lancer le daemon en mode débugage avec gestion d'un capteur IAQ Core P et 
@@ -116,13 +118,14 @@ personnalisé grâce au protocole de configuration prévu par xPL (paramètre **
 
 **dmg-iaqmon** utilise le schéma **sensor.basic** pour transmettre ses mesures. 
 
-Le champ **device** peut prendre 4 valeurs en fonction du capteurs fournissant 
+Le champ **device** peut prendre 5 valeurs en fonction du capteurs fournissant 
 la mesure:
 
 1. **rht** pour le capteur ChipCap®2 de température et d'humidité  
 2. **iaq** pour le capteur IAQ-Core P de CO² et de composés organiques volatiles  
 3. **pm** pour le capteur GP2Y1010 de particules fines.
-4. **led** pour la luminosité des leds.
+4. **brightness** pour la luminosité des leds.
+5. **wave** pour la période de variation de luminosité des leds.
 
 **dmg-iaqmon** peut être interrogé grâce à un message **sensor.request**.
 
@@ -244,9 +247,19 @@ au moment du lancement du daemon.
 
     sensor.basic
     {
-    device=led
+    device=brightness
     type=slider
-    current=<value> # Luminosité des leds RGB entre 0 et 25
+    current=<value> # Luminosité des leds RGB entre 0 et 255
+    }
+    
+Le message ci-dessous n'est envoyé que si l'option `-w` a été fournie
+au moment du lancement du daemon.
+
+    sensor.basic
+    {
+    device=wave
+    type=variable
+    current=<value> # Période de variation de luminosité des leds en secondes (max. 65535)
     }
 
 ### Messages **xpl-trig**
@@ -287,7 +300,7 @@ luminosité maximale.
 
     control.basic
     {
-    device=led
+    device=brightness
     type=slider
     current=<value>
     }
@@ -297,6 +310,19 @@ Comme toute valeur de type **slider**, `<value>` peut être de la forme suivante
 * `+nn` incrément de la valeur de `nn`  
 * `-nn` décrément de la valeur de `nn`  
 * `nn%` valeur entre 0 et 100% (100% correspondant à la luminosité max. `led-max`)  
+
+Un message xpl-trig correspondant est envoyé uniquement si la valeur a été 
+modifiée (valeur demandée correcte et différente de la précédente).
+
+Le message ci-dessous permet de modifier la période de variation de luminosité 
+des leds en secondes:
+
+    control.basic
+    {
+    device=wave
+    type=variable
+    current=<value> Période de variation de luminosité des leds en secondes (max. 65535)
+    }
 
 Un message xpl-trig correspondant est envoyé uniquement si la valeur a été 
 modifiée (valeur demandée correcte et différente de la précédente).
