@@ -142,36 +142,39 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
   if (xCtx.xRhtSensor) {
 
     // Mesure capteur HIH6130/ChipCap2
-    ret = priRhtRead (&xCtx.xRhtCurrent);
+    if ( (t - xCtx.ulRhtLastTime) > CFG_SENSOR_RHT_POLL_RATE) {
 
-    if (ret < 0) {
+      ret = priRhtRead (&xCtx.xRhtCurrent);
 
-      vLog (LOG_ERR, "iHih6130Read() returns %d, Unable to read RHT sensor !", ret);
-    }
-    else if (ret == 0) {
+      if (ret < 0) {
 
-      // Mesure effectuée correctement
-
-      // Calcul de l'indice de qualité [1,6]
-      xCtx.xQiCurrent.ucHum = prucHumidityQi (xCtx.xRhtCurrent.dHum);
-
-      if (msgtype == gxPLMessageTrigger) {
-
-        if (fabs (xCtx.xRhtCurrent.dTemp - xCtx.xRhtLastTx.dTemp) >= xCtx.xRhtGap.dTemp) {
-
-          xCtx.bTempRequest = 1;
-        }
-        if (fabs (xCtx.xRhtCurrent.dHum - xCtx.xRhtLastTx.dHum) >= xCtx.xRhtGap.dHum) {
-
-          xCtx.bHumRequest = 1;
-        }
-        if (abs (xCtx.xQiCurrent.ucHum -  xCtx.xQiLastTx.ucHum) > 0) {
-
-          xCtx.bHumQiRequest = xCtx.bAqiEnabled;
-        }
+        vLog (LOG_ERR, "iHih6130Read() returns %d, Unable to read RHT sensor !", ret);
       }
+      else if (ret == 0) {
 
-      priRhtStart();
+        // Mesure effectuée correctement
+
+        // Calcul de l'indice de qualité [1,6]
+        xCtx.xQiCurrent.ucHum = prucHumidityQi (xCtx.xRhtCurrent.dHum);
+
+        if (msgtype == gxPLMessageTrigger) {
+
+          if (fabs (xCtx.xRhtCurrent.dTemp - xCtx.xRhtLastTx.dTemp) >= xCtx.xRhtGap.dTemp) {
+
+            xCtx.bTempRequest = 1;
+          }
+          if (fabs (xCtx.xRhtCurrent.dHum - xCtx.xRhtLastTx.dHum) >= xCtx.xRhtGap.dHum) {
+
+            xCtx.bHumRequest = 1;
+          }
+          if (abs (xCtx.xQiCurrent.ucHum -  xCtx.xQiLastTx.ucHum) > 0) {
+
+            xCtx.bHumQiRequest = xCtx.bAqiEnabled;
+          }
+        }
+
+        priRhtStart();
+      }
     }
   }
 

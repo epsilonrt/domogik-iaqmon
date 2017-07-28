@@ -48,6 +48,7 @@ struct xIaqMonContext {
   xHih6130Data xRhtLastTx;
   xHih6130Data xRhtGap;   // configurable
   xHih6130Data xRhtZero;  // configurable
+  time_t ulRhtLastTime;
 
   uint8_t ucIaqAddr;
   xIaq * xIaqSensor;

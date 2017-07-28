@@ -53,6 +53,7 @@ extern "C" {
 #define CFG_SENSOR_LED_MAX_NAME  "led-max"
 
 // --- Capteur de température et d'humidité
+#define CFG_SENSOR_RHT_POLL_RATE  11
 #define CFG_SENSOR_RHT_DEVICE     "rht"
 #define CFG_SENSOR_TEMP_TYPE      "temp"
 #define CFG_SENSOR_HUM_TYPE       "humidity"
