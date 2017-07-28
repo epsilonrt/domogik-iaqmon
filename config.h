@@ -46,8 +46,11 @@ extern "C" {
 #define CFG_SENSOR_FLAG_NAME  "flag"
 
 // --- Leds RGB
-#define CFG_SENSOR_LED_DEVICE     "led"
-#define CFG_SENSOR_LUM_TYPE       "slider"
+#define CFG_SENSOR_LUMINOSITY_DEVICE  "brightness"
+#define CFG_SENSOR_SLIDER_TYPE  "slider"
+
+#define CFG_SENSOR_WAVE_DEVICE  "wave"
+#define CFG_SENSOR_VARIABLE_TYPE  "variable"
 
 // Paramètres configurables par xPL
 #define CFG_SENSOR_LED_MAX_NAME  "led-max"
@@ -116,6 +119,7 @@ extern "C" {
 #define CFG_DEFAULT_LED_LED4_BLUE  8
 
 #define CFG_DEFAULT_LED_MAX       512
+#define CFG_DEFAULT_LED_WAVE_PERIOD 15
 
 // Paramètres xPL
 #define CFG_DEFAULT_STAT_INTERVAL  300 // 0 pas de message stat périodique

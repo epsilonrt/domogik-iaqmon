@@ -54,6 +54,9 @@ prvPrintUsage (void) {
   printf ("  -L [lum]     - enable RGB leds to display the air quality index (AQI),\n"
           "                 The maximum brightness can be provided [0,1023], default is %d\n",
           CFG_DEFAULT_LED_MAX);
+  printf ("  -w [period]  - enable RGB leds wave effect,\n"
+          "                 The wave period can be provided in seconds, default is %d\n",
+          CFG_DEFAULT_LED_WAVE_PERIOD);
   printf ("  -h           - print this message\n\n");
 }
 
@@ -147,20 +150,45 @@ vMain (gxPLSetting * setting) {
         PWARNING ("Unable to poll sensor, error %d", ret);
       }
 
-      if ( (xCtx.bLedEnabled) && (xCtx.bLedChanged) ) {
-        float f = (float) xCtx.usLedMax * (float) xCtx.ucLedSlider / 255.0;
-        uint16_t lum = (uint16_t) floorf (f);
+      if  ( (xCtx.bLedEnabled) && (xCtx.usLedMax) )  {
 
-        ret = iLedSetLuminosity (lum);
-        if (ret == 0) {
+        if  ( (xCtx.usLedWaveT) || (xCtx.bLedChanged) ) {
+          double f, s = (double) xCtx.ucLedSlider;
+          static uint16_t prev_lum = -1;
+          uint16_t lum;
 
-          xCtx.bLedChanged = 0;
-          xCtx.bLedRequest = 1;
-          PDEBUG ("set led luminosity = %u", lum);
-        }
-        else {
+          if  (xCtx.usLedWaveT) {
+            double a = (double) xCtx.ucLedSlider;
+            time_t t = time (NULL);
 
-          PWARNING ("Unable to set led luminosity, error %d", ret);
+            s = 0.45 * a * sin (2 * M_PI * t /  ( (double) xCtx.usLedWaveT)  ) + 0.55 * a;
+            if (s <= 1) {
+
+              s = 1;
+            }
+          }
+
+          f = (double) xCtx.usLedMax * s / 255.0;
+          lum = (uint16_t) floor (f);
+
+          if (lum != prev_lum) {
+
+            ret = iLedSetLuminosity (lum);
+            if (ret == 0) {
+
+              xCtx.bLedChanged = 0;
+              prev_lum = lum;
+              if  (xCtx.usLedWaveT == 0) {
+
+                PDEBUG ("luminosity=%u", lum);
+                xCtx.bLedSliderRequest = 1;
+              }
+            }
+            else {
+
+              PWARNING ("Unable to set led luminosity, error %d", ret);
+            }
+          }
         }
       }
     }
@@ -197,7 +225,7 @@ void
 vParseAdditionnalOptions (int argc, char * argv[]) {
   int c;
 
-  static const char short_options[] = "ahb:q::t::p::L::" GXPL_GETOPT;
+  static const char short_options[] = "ahb:q::t::p::L::w::" GXPL_GETOPT;
   static struct option long_options[] = {
     {"bus",   required_argument, NULL, 's'},
     {"iaq",   optional_argument, NULL, 'q' },
@@ -205,6 +233,7 @@ vParseAdditionnalOptions (int argc, char * argv[]) {
     {"pm",    optional_argument, NULL, 'p' },
     {"aqi",   no_argument,       NULL, 'a' },
     {"led",   optional_argument, NULL, 'L' },
+    {"wave",   optional_argument, NULL, 'w' },
     {"help",  no_argument,       NULL, 'h' },
     {NULL, 0, NULL, 0} /* End of array need by getopt_long do not delete it*/
   };
@@ -277,6 +306,34 @@ vParseAdditionnalOptions (int argc, char * argv[]) {
           break;
         }
         PDEBUG ("enabled gp2-i2c at 0x%02X (default)", xCtx.ucRhtAddr);
+        break;
+
+      case 'w':
+        if (optarg) {
+          long n;
+
+          if (iStrToLong (optarg, &n, 0) == 0) {
+            if ( (n >= 0) && (n <= UINT16_MAX) ) {
+
+              xCtx.usLedWaveT = (uint16_t) n;
+            }
+            else {
+              
+              vLog (LOG_ERR, "led wave period out of bounds !");
+            }
+          }
+        }
+        else {
+
+          xCtx.usLedWaveT = CFG_DEFAULT_LED_WAVE_PERIOD;
+        }
+
+        if (xCtx.usLedWaveT) {
+
+          PDEBUG ("set led wave period to %u", xCtx.usLedWaveT);
+          xCtx.bLedEnabled = 1;
+          xCtx.bAqiEnabled = 1;
+        }
         break;
 
       case 'L':

@@ -451,13 +451,28 @@ priSendCurrentValue (gxPLDevice * device, gxPLMessageType msgtype) {
     xCtx.iPmLastTx = xCtx.iPmCurrent;
   }
 
-  if (xCtx.bLedRequest) {
+  if (xCtx.bLedSliderRequest) {
 
-    xCtx.bLedRequest = 0;
+    xCtx.bLedSliderRequest = 0;
     gxPLMessageBodyClear (xCtx.xSensorMsg);
-    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_LED_DEVICE);
-    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_LUM_TYPE);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_LUMINOSITY_DEVICE);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_SLIDER_TYPE);
     gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.ucLedSlider);
+
+    // Broadcast the message
+    if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
+
+      return -1;
+    }
+  }
+
+  if (xCtx.bLedWaveRequest) {
+
+    xCtx.bLedWaveRequest = 0;
+    gxPLMessageBodyClear (xCtx.xSensorMsg);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "device", CFG_SENSOR_WAVE_DEVICE);
+    gxPLMessagePairAdd (xCtx.xSensorMsg, "type", CFG_SENSOR_VARIABLE_TYPE);
+    gxPLMessagePairAddFormat (xCtx.xSensorMsg, "current", "%u", xCtx.usLedWaveT);
 
     // Broadcast the message
     if (gxPLDeviceMessageSend (device, xCtx.xSensorMsg) < 0) {
@@ -506,9 +521,13 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
           xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
           xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;
         }
-        else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_LUM_TYPE) == 0) {
+        else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_SLIDER_TYPE) == 0) {
 
-          xCtx.bLedRequest = xCtx.bLedEnabled;
+          xCtx.bLedSliderRequest = xCtx.bLedEnabled;
+        }
+        else if (strcmp (gxPLMessagePairGet (msg, "type"), CFG_SENSOR_VARIABLE_TYPE) == 0) {
+
+          xCtx.bLedWaveRequest = (xCtx.usLedWaveT != 0);
         }
       }
       else if (gxPLMessagePairExist (msg, "device") == true) {
@@ -532,10 +551,15 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
           xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
           xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;
         }
-        else if (strcmp (gxPLMessagePairGet (msg, "device"), CFG_SENSOR_LED_DEVICE) == 0) {
+        else if (strcmp (gxPLMessagePairGet (msg, "device"), CFG_SENSOR_LUMINOSITY_DEVICE) == 0) {
 
-          xCtx.bLedRequest = xCtx.bLedEnabled;
+          xCtx.bLedSliderRequest = xCtx.bLedEnabled;
         }
+        else if (strcmp (gxPLMessagePairGet (msg, "device"), CFG_SENSOR_WAVE_DEVICE) == 0) {
+
+          xCtx.bLedWaveRequest = (xCtx.usLedWaveT != 0);
+        }
+
       }
       else {
 
@@ -552,7 +576,8 @@ prvSensorMessageListener (gxPLDevice * device, gxPLMessage * msg, void * udata) 
         xCtx.bTvocQiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
         xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;
 
-        xCtx.bLedRequest = xCtx.bLedEnabled;
+        xCtx.bLedSliderRequest = xCtx.bLedEnabled;
+        xCtx.bLedWaveRequest = (xCtx.usLedWaveT != 0);
 
         xCtx.ulStatLastTime = time (NULL);
       }
@@ -695,7 +720,8 @@ iSensorPoll (gxPLDevice * device) {
       xCtx.bTvocQiRequest = (xCtx.xIaqSensor != NULL) && xCtx.bAqiEnabled;
       xCtx.bPmRequest = (xCtx.xPmSensor != NULL);
       xCtx.bPmQiRequest = (xCtx.xPmSensor != NULL) && xCtx.bAqiEnabled;
-      xCtx.bLedRequest = xCtx.bLedEnabled;
+      xCtx.bLedSliderRequest = xCtx.bLedEnabled;
+      xCtx.bLedWaveRequest = (xCtx.usLedWaveT != 0);
 
       xCtx.ulStatLastTime = t;
       return priSendCurrentValue (device, gxPLMessageStatus);

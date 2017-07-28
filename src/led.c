@@ -34,8 +34,8 @@ prvControlBasicListener (gxPLDevice * device, gxPLMessage * msg, void * udata) {
         XPL-CMND Structure
         control.basic
         {
-        device=led
-        type=luminosity
+        device=brightness
+        type=slider
         current=<value to which device should be set>
         }
       --- Réponse ---
@@ -47,53 +47,73 @@ prvControlBasicListener (gxPLDevice * device, gxPLMessage * msg, void * udata) {
     const char * dev = gxPLMessagePairGet (msg, "device");
     const char * type = gxPLMessagePairGet (msg, "type");
 
-
-    if ( (strcmp (dev, CFG_SENSOR_LED_DEVICE) == 0) &&
-         (strcmp (type, CFG_SENSOR_LUM_TYPE) == 0) && xCtx.bLedEnabled) {
+    if (xCtx.bLedEnabled) {
       const char * current = gxPLMessagePairGet (msg, "current");
-      /*
-        nn = set to value (0-255)
-        +nn = increment by nn
-        -nn = decrement by nn
-        nn% = set to nn (where nn is a percentage - 0-100%)
-       */
-      size_t len = strlen (current);
 
-      if (len > 0) {
+      if ( (strcmp (dev, CFG_SENSOR_WAVE_DEVICE) == 0) &&
+           (strcmp (type, CFG_SENSOR_VARIABLE_TYPE) == 0) ) {
         long n;
 
         if (iStrToLong (current, &n, 0) == 0) {
-          uint8_t ucSlider;
-          long s = xCtx.ucLedSlider;
+          
+          if ( (n >= 0) && (n <= UINT16_MAX) ) {
 
-          if  ((current[0] == '+') || (current[0] == '-')) {
+            uint16_t usLedWaveT = (uint16_t) n;
+            if (usLedWaveT != xCtx.usLedWaveT) {
 
-            s += n;
+              PDEBUG ("set led wave period = %u", usLedWaveT);
+              xCtx.usLedWaveT = usLedWaveT;
+              xCtx.bLedWaveRequest = 1;
+            }
           }
-          else if (current[len - 1] == '%') {
+        }
+      }
+      else if ( (strcmp (dev, CFG_SENSOR_LUMINOSITY_DEVICE) == 0) &&
+                (strcmp (type, CFG_SENSOR_SLIDER_TYPE) == 0) ) {
+        /*
+          nn = set to value (0-255)
+          +nn = increment by nn
+          -nn = decrement by nn
+          nn% = set to nn (where nn is a percentage - 0-100%)
+         */
+        size_t len = strlen (current);
 
-            s = (n * 255) / 100;
-          }
-          else {
+        if (len > 0) {
+          long n;
 
-            s = n;
-          }
+          if (iStrToLong (current, &n, 0) == 0) {
+            uint8_t ucSlider;
+            long s = xCtx.ucLedSlider;
 
-          if (s < 0) {
+            if  ( (current[0] == '+') || (current[0] == '-') ) {
 
-            s = 0;
-          }
-          else if (s > 255) {
+              s += n;
+            }
+            else if (current[len - 1] == '%') {
 
-            s = 255;
-          }
+              s = (n * 255) / 100;
+            }
+            else {
 
-          ucSlider = (uint8_t) s;
-          if (ucSlider != xCtx.ucLedSlider) {
-            
-            PDEBUG ("set led slider = %u", ucSlider);
-            xCtx.ucLedSlider = ucSlider;
-            xCtx.bLedChanged = 1;
+              s = n;
+            }
+
+            if (s < 0) {
+
+              s = 0;
+            }
+            else if (s > 255) {
+
+              s = 255;
+            }
+
+            ucSlider = (uint8_t) s;
+            if (ucSlider != xCtx.ucLedSlider) {
+
+              PDEBUG ("set led slider = %u", ucSlider);
+              xCtx.ucLedSlider = ucSlider;
+              xCtx.bLedChanged = 1;
+            }
           }
         }
       }

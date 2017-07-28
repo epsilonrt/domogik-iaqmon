@@ -71,6 +71,8 @@ struct xIaqMonContext {
   uint16_t usLedMaxToForce; // from command line
   uint16_t usLedMax; // configurable 0-1023
   uint8_t ucLedSlider; // 0-255
+  uint16_t usLedWaveT;
+  double dLedWaveAngle;
 
   time_t ulStatLastTime;
 
@@ -103,8 +105,9 @@ struct xIaqMonContext {
     uint16_t bPmSettingChanged: 1;
 
     uint16_t bLedEnabled: 1;
-    uint16_t bLedRequest: 1;
+    uint16_t bLedSliderRequest: 1;
     uint16_t bLedChanged: 1;
+    uint16_t bLedWaveRequest: 1;
   };
 };
 typedef struct xIaqMonContext xIaqMonContext;
