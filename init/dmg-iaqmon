@@ -105,8 +105,12 @@ set_args () {
   fi
 
   var=$(trim "$(grep 'led' $tmpf | cut -d '=' -f2)")
-  if [ "$var" = "1" ] || [ "$var" = "true" ]; then
-    LED=-L
+  if [ "_$var" != "_" ]; then
+    if [ "$var" = "default" ]; then
+      PM="-L"
+    else
+      PM="-L$var"
+    fi
   fi
 
   var=$(trim "$(grep 'wave' $tmpf | cut -d '=' -f2)")
