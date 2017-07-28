@@ -119,7 +119,7 @@ extern "C" {
 #define CFG_DEFAULT_LED_LED4_BLUE  8
 
 #define CFG_DEFAULT_LED_MAX       512
-#define CFG_DEFAULT_LED_WAVE_PERIOD 15
+#define CFG_DEFAULT_LED_WAVE_PERIOD 60
 
 // Paramètres xPL
 #define CFG_DEFAULT_STAT_INTERVAL  300 // 0 pas de message stat périodique
